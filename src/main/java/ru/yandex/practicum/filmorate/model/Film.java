@@ -21,7 +21,7 @@ public class Film {
     @LocalDateRestrictions
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
     private LocalDate releaseDate;
-    @Positive
+    @Positive(message = "должно быть больше 0")
     private long duration;
 
 }

@@ -147,12 +147,12 @@ class FilmorateApplicationTests {
     @Test
     @DisplayName("электронная почта не может быть пустой и должна содержать символ @ - без собаки")
     void emailCannotBeWithoutDog() {
-        User user = User.builder().id(null).email(null).login("test_login")
+        User user = User.builder().id(null).email("testasd").login("test_login")
                 .name("test_name").birthday(VALID_DATA_TIME_BIRTHDAY).build();
         Set<ConstraintViolation<User>> violations = validator.validate(user);
 
         assertTrue(violations.size() > 0);
-        assertEquals("не должно равняться null", violations.stream()
+        assertEquals("должно иметь формат адреса электронной почты", violations.stream()
                 .map(ConstraintViolation::getMessage)
                 .collect(Collectors.joining()));
     }
