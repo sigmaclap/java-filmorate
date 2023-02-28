@@ -26,6 +26,12 @@ class FilmorateApplicationTests {
     private final LocalDate INVALID_DATA_TIME = LocalDate.of(1895, Month.DECEMBER, 27);
     private final LocalDate VALID_DATA_TIME_BIRTHDAY = LocalDate.of(2020, Month.DECEMBER, 28);
     private final LocalDate INVALID_DATA_TIME_BIRTHDAY = LocalDate.of(4000, Month.DECEMBER, 27);
+    private final String INVALID_DATA_201_CHAR = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit," +
+            " sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. " +
+            "Ut wisi enim ad minim veniam, quis nostrud exerci tatioa";
+    private final String VALID_DATA_200_CHAR = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit," +
+            " sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. " +
+            "Ut wisi enim ad minim veniam, quis nostrud exerci tatio";
     private static Validator validator;
     private FilmController filmController;
     private UserController userController;
@@ -38,6 +44,7 @@ class FilmorateApplicationTests {
         userController = new UserController();
 
     }
+
 
     @Test
     @DisplayName("Create Films with VALID_DATA_TIME")
@@ -80,9 +87,7 @@ class FilmorateApplicationTests {
     @DisplayName("максимальная длина описания — 201 символов")
     void maxCharactersDescription201() {
         Film film = Film.builder()
-                .id(null).name("TEST").description("Lorem ipsum dolor sit amet, consectetuer adipiscing elit," +
-                        " sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. " +
-                        "Ut wisi enim ad minim veniam, quis nostrud exerci tatioa").releaseDate(VALID_DATA_TIME)
+                .id(null).name("TEST").description(INVALID_DATA_201_CHAR).releaseDate(VALID_DATA_TIME)
                 .duration(100).build();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -96,9 +101,7 @@ class FilmorateApplicationTests {
     @DisplayName("максимальная длина описания — 200 символов")
     void maxCharactersDescription200() {
         Film film = Film.builder()
-                .id(null).name("TEST").description("Lorem ipsum dolor sit amet, consectetuer adipiscing elit," +
-                        " sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. " +
-                        "Ut wisi enim ad minim veniam, quis nostrud exerci tatio").releaseDate(VALID_DATA_TIME)
+                .id(null).name("TEST").description(VALID_DATA_200_CHAR).releaseDate(VALID_DATA_TIME)
                 .duration(100).build();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
