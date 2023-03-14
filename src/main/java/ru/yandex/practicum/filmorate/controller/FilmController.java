@@ -1,78 +1,54 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistException;
-import ru.yandex.practicum.filmorate.exceptions.InvalidDataException;
-import ru.yandex.practicum.filmorate.json.ErrorJson;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @Slf4j
+@RequestMapping("/films")
+@AllArgsConstructor
 public class FilmController {
-    private int idxFilms = 0;
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final FilmService filmService;
 
-    @GetMapping("/films")
+    @GetMapping()
     public List<Film> getFilms() {
-        log.debug("Количество фильмов: {}", films.size());
-        return new ArrayList<>(films.values());
+        return filmService.getFilms();
     }
 
-    @PostMapping(value = "/films")
+    @GetMapping("/{id}")
+    public Film findFilm(@PathVariable("id") Integer filmId) {
+        return filmService.findFilmById(filmId);
+    }
+
+    @PostMapping()
     public Film createFilm(@Valid @RequestBody Film film) {
-        return create(film);
+        return filmService.create(film);
     }
 
-    @PutMapping(value = "/films")
+    @PutMapping()
     public Film updateFilms(@Valid @RequestBody Film film) {
-        return update(film);
+        return filmService.update(film);
     }
 
-    private Film create(Film film) {
-        int id = ++idxFilms;
-        if (films.containsValue(film)) {
-            log.error("Get ERROR {{}}, request /POST", "Такой фильм уже есть в коллекции");
-            throw new FilmAlreadyExistException(HttpStatus.BAD_REQUEST,
-                    ErrorJson.Response("Такой фильм уже есть в коллекции"));
-        } else if (film == null || film.toString().isEmpty()) {
-            log.error("Get ERROR {{}}, request /POST", "Пустое значение Film");
-            throw new InvalidDataException(HttpStatus.BAD_REQUEST,
-                    ErrorJson.Response("Пустое значение Film"));
-        } else {
-            film.setId(id);
-            films.put(id, film);
-            log.debug("Film created: {}", film);
-            return film;
-        }
+    @GetMapping("/popular")
+    public List<Film> getFilmsWithCountLikes(
+            @RequestParam(defaultValue = "10") Integer count) {
+        return filmService.getFilmsWithCountLikes(count);
     }
 
-    private Film update(Film film) {
-        if (film.getId() == null || !films.containsKey(film.getId())) {
-            log.error("Get ERROR {{}}, request /PUT", "Невозможно обновить фильм, не найден ID");
-            throw new InvalidDataException(HttpStatus.NOT_FOUND,
-                    ErrorJson.Response("Невозможно обновить фильм, не найден ID"));
-        }
-        films.remove(film.getId());
-        films.put(film.getId(), film);
-        return film;
+    @PutMapping("/{id}/like/{userId}")
+    public Film likeFilm(@PathVariable("id") Integer filmId, @PathVariable("userId") Integer userId) {
+        return filmService.likeFilm(filmId, userId);
     }
 
-    @ExceptionHandler(FilmAlreadyExistException.class)
-    public ResponseEntity handleException(FilmAlreadyExistException e) {
-        return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
-    }
-
-    @ExceptionHandler(InvalidDataException.class)
-    public ResponseEntity handleException(InvalidDataException e) {
-        return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
+    @DeleteMapping("/{id}/like/{userId}")
+    public Film deleteLike(@PathVariable("id") Integer filmId, @PathVariable("userId") Integer userId) {
+        return filmService.deleteLike(filmId, userId);
     }
 }

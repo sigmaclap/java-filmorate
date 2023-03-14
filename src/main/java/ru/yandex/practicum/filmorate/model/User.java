@@ -8,12 +8,16 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Data
 @Builder
 public class User {
     private Integer id;
+    private final Set<Long> friendsList = new HashSet<>();
+
     @NotNull(message = "не должно равняться null")
     @Email(message = "должно иметь формат адреса электронной почты")
     private final String email;
@@ -28,7 +32,8 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(email, user.email)
+        return Objects.equals(friendsList, user.friendsList)
+                && Objects.equals(email, user.email)
                 && Objects.equals(login, user.login)
                 && Objects.equals(name, user.name)
                 && Objects.equals(birthday, user.birthday);
@@ -36,6 +41,6 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hash(email, login, name, birthday);
+        return Objects.hash(friendsList, email, login, name, birthday);
     }
 }

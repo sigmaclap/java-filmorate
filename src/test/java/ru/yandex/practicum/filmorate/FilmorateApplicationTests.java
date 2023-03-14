@@ -4,10 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -33,16 +33,15 @@ class FilmorateApplicationTests {
             " sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. " +
             "Ut wisi enim ad minim veniam, quis nostrud exerci tatio";
     private static Validator validator;
-    private FilmController filmController;
-    private UserController userController;
+    private InMemoryFilmStorage filmController;
+    private InMemoryUserStorage userController;
 
     @BeforeEach
     void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.usingContext().getValidator();
-        filmController = new FilmController();
-        userController = new UserController();
-
+        filmController = new InMemoryFilmStorage(userController);
+        userController = new InMemoryUserStorage();
     }
 
 
@@ -51,7 +50,7 @@ class FilmorateApplicationTests {
     void createFilmWithValidDateTime() {
         Film film = Film.builder()
                 .id(null).name("TEST").description("description").releaseDate(VALID_DATA_TIME).duration(100).build();
-        filmController.createFilm(film);
+        filmController.create(film);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
         assertTrue(violations.isEmpty());
@@ -178,7 +177,7 @@ class FilmorateApplicationTests {
     void NameCanBeNull() {
         User user = User.builder().id(null).email("test@yandex.com").login("test_login")
                 .name(null).birthday(VALID_DATA_TIME_BIRTHDAY).build();
-        userController.createUser(user);
+        userController.create(user);
         Set<ConstraintViolation<User>> violations = validator.validate(user);
 
         assertTrue(violations.isEmpty());
