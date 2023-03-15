@@ -44,34 +44,4 @@ public class ErrorHandler {
     public ErrorResponse handleThrowable(final Throwable e) {
         return new ErrorResponse("Произошла непредвиденная ошибка.");
     }
-
-    //    @ExceptionHandler(FilmAlreadyExistException.class)
-//    public ResponseEntity handleException(FilmAlreadyExistException e) {
-//        return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
-//    }
-//
-//    @ExceptionHandler(InvalidDataException.class)
-//    public ResponseEntity handleException(InvalidDataException e) {
-//        return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
-//    }
-
-//    @ExceptionHandler({FilmAlreadyExistException.class, InvalidDataException.class})
-//    public ResponseEntity handleException(RuntimeException e) {
-//        return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
-//    }
-
-//    @ExceptionHandler
-//    public Map<String, String> handleNegativeCount(final InvalidDataException e) {
-//        return Map.of("error", "Невозможно обновить фильм, не найден ID.");
-//    }
-
-    //    @ExceptionHandler(UserAlreadyExistException.class)
-//    public ResponseEntity handleException(UserAlreadyExistException e) {
-//        return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
-//    }
-//
-//    @ExceptionHandler(InvalidDataException.class)
-//    public ResponseEntity handleException(InvalidDataException e) {
-//        return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
-//    }
 }

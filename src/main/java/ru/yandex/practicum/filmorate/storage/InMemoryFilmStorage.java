@@ -31,8 +31,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film findFilmById(Integer filmId) {
-        List<Film> filmList = new ArrayList<>(films.values());
-        return filmList.stream()
+        return films.values().stream()
                 .filter(p -> p.getId().equals(filmId))
                 .findFirst()
                 .orElseThrow(() -> new FilmNotFoundException(String.format("Пост № %d не найден", filmId)));
@@ -42,15 +41,15 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film create(Film film) {
         int id = ++idxFilms;
         if (films.containsValue(film)) {
-            log.error("Get ERROR {{}}, request /POST", "Такой фильм уже есть в коллекции");
+            log.error("Такой фильм уже есть в коллекции");
             throw new FilmAlreadyExistException("Такой фильм уже есть в коллекции");
         } else if (film == null || film.toString().isEmpty()) {
-            log.error("Get ERROR {{}}, request /POST", "Пустое значение Film");
+            log.error("Пустое значение Film");
             throw new InvalidDataException("Пустое значение Film");
         } else {
             film.setId(id);
             films.put(id, film);
-            log.debug("Film created: {}", film);
+            log.debug("Фильм успешно создан: {}", film);
             return film;
         }
     }
@@ -58,7 +57,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         if (film.getId() == null || !films.containsKey(film.getId())) {
-            log.error("Get ERROR {{}}, request /PUT", "Невозможно обновить фильм, не найден ID");
+            log.error("Невозможно обновить фильм, не найден ID");
             throw new FilmNotFoundException("Невозможно обновить фильм, не найден ID.");
         }
         films.remove(film.getId());

@@ -35,7 +35,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @Description("Search users by ID")
+    @Description("Поиск пользователя по ID")
     public User findUser(@PathVariable("id") Integer userId) {
         return userService.findUserById(userId);
     }
@@ -47,17 +47,19 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    @Description("Add new friend to User")
+    @Description("Добавление в друзья пользователя")
     public User addFriend(@PathVariable("id") Integer userId, @PathVariable("friendId") Integer friendId) {
         return userService.addFriend(userId, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
+    @Description("Удаление друга из списка друзей пользователя")
     public User removeFriendToUser(@PathVariable("id") Integer userId, @PathVariable("friendId") Integer friendId) {
         return userService.removeFriendToUser(userId, friendId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
+    @Description("Отображение общего списка друзей пользователей")
     public List<User> commonFriends(@PathVariable("id") Integer userId, @PathVariable("otherId") Integer otherId) {
         return userService.commonFriends(userId, otherId);
     }

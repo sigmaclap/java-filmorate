@@ -32,22 +32,21 @@ public class InMemoryUserStorage implements UserStorage {
     public User create(User user) {
         int id = ++idxUsers;
         if (users.containsValue(user)) {
-            log.error("Get ERROR {}, request /POST",
-                    "Такой пользователь уже существует");
+            log.error("Такой пользователь уже существует");
             throw new UserAlreadyExistException("Такой пользователь уже существует");
         } else if (user == null || user.toString().isEmpty()) {
-            log.error("Get ERROR {}, request /POST", "Пустое значение User");
+            log.error("Пустое значение User");
             throw new InvalidDataException("Пустое значение User");
         } else {
             if (user.getName() == null || user.getName().isBlank()) {
                 user.setName(user.getLogin());
                 user.setId(id);
                 users.put(id, user);
-                log.debug("User created - SetName = UserLogin: {}", user);
+                log.debug("Пользователь успешно создан - Заданно имя = Логин: {}", user);
             } else {
                 user.setId(id);
                 users.put(id, user);
-                log.debug("User created: {}", user);
+                log.debug("Пользователь успешно создан: {}", user);
             }
             return user;
         }
@@ -56,7 +55,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User update(User user) {
         if (user.getId() == null || !users.containsKey(user.getId())) {
-            log.error("Get ERROR {}, id - {}, request /PUT", "Невозможно обновить пользователя, не найден ID",
+            log.error("Невозможно обновить пользователя, не найден ID",
                     user.getId());
             throw new UserNotFoundException("Невозможно обновить пользователя, не найден ID");
         }
@@ -75,7 +74,7 @@ public class InMemoryUserStorage implements UserStorage {
         return userList.stream()
                 .filter(p -> p.getId().equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new UserNotFoundException(String.format("User № %d не найден", userId)));
+                .orElseThrow(() -> new UserNotFoundException(String.format("Пользователь № %d не найден", userId)));
     }
 
 
