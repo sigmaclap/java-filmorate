@@ -5,9 +5,6 @@ import org.springframework.http.HttpStatus;
 public class InvalidDataException extends RuntimeException {
     private HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 
-    public InvalidDataException() {
-    }
-
 
     public HttpStatus getHttpStatus() {
         return httpStatus;

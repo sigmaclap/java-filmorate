@@ -1,91 +1,66 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jdk.jfr.Description;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.InvalidDataException;
-import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistException;
-import ru.yandex.practicum.filmorate.json.ErrorJson;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @Slf4j
+@RequestMapping("/users")
+@AllArgsConstructor
 public class UserController {
-    private int idxUsers = 0;
-    private final Map<Integer, User> users = new HashMap<>();
 
-    @GetMapping("/users")
+    private final UserService userService;
+
+
+    @GetMapping()
     public List<User> findUsers() {
-        log.debug("Количество пользователей: {}", users.size());
-        return new ArrayList<>(users.values());
+        return userService.findUsers();
     }
 
-    @PostMapping(value = "/users")
+    @PostMapping()
     public User createUser(@Valid @RequestBody User user) {
-        return create(user);
+        return userService.create(user);
     }
 
-    @PutMapping(value = "/users")
+    @PutMapping()
     public User updateUsers(@Valid @RequestBody User user) {
-        return update(user);
+        return userService.update(user);
     }
 
-    private User create(User user) {
-        int id = ++idxUsers;
-        if (users.containsValue(user)) {
-            log.error("Get ERROR {}, request /POST",
-                    "Такой пользователь уже существует");
-            throw new UserAlreadyExistException(HttpStatus.BAD_REQUEST,
-                    ErrorJson.Response("Такой пользователь уже существует"));
-        } else if (user == null || user.toString().isEmpty()) {
-            log.error("Get ERROR {}, request /POST", "Пустое значение User");
-            throw new InvalidDataException(HttpStatus.BAD_REQUEST,
-                    ErrorJson.Response("Пустое значение User"));
-        } else {
-            if (user.getName() == null) {
-                user.setName(user.getLogin());
-                user.setId(id);
-                users.put(id, user);
-                log.debug("User created - SetName = UserLogin: {}", user);
-                return user;
-            } else {
-                user.setId(id);
-                users.put(id, user);
-                log.debug("User created: {}", user);
-                return user;
-            }
-        }
+    @GetMapping("/{id}")
+    @Description("Поиск пользователя по ID")
+    public User findUser(@PathVariable("id") Integer userId) {
+        return userService.findUserById(userId);
     }
 
-    private User update(User user) {
-        if (user.getId() == null || !users.containsKey(user.getId())) {
-            log.error("Get ERROR {}, id - {}, request /PUT", "Невозможно обновить пользователя, не найден ID",
-                    user.getId());
-            throw new InvalidDataException(HttpStatus.NOT_FOUND,
-                    ErrorJson.Response("Невозможно обновить пользователя, не найден ID"));
-        }
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-        }
-        users.remove(user.getId());
-        users.put(user.getId(), user);
-        return user;
+    @GetMapping("/{id}/friends")
+    @Description("Возвращаем список пользователей, являющихся его друзьями.")
+    public List<User> getFriendsUser(@PathVariable("id") Integer id) {
+        return userService.getFriendsUser(id);
     }
 
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public ResponseEntity handleException(UserAlreadyExistException e) {
-        return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
+    @PutMapping("/{id}/friends/{friendId}")
+    @Description("Добавление в друзья пользователя")
+    public User addFriend(@PathVariable("id") Integer userId, @PathVariable("friendId") Integer friendId) {
+        return userService.addFriend(userId, friendId);
     }
 
-    @ExceptionHandler(InvalidDataException.class)
-    public ResponseEntity handleException(InvalidDataException e) {
-        return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
+    @DeleteMapping("/{id}/friends/{friendId}")
+    @Description("Удаление друга из списка друзей пользователя")
+    public User removeFriendToUser(@PathVariable("id") Integer userId, @PathVariable("friendId") Integer friendId) {
+        return userService.removeFriendToUser(userId, friendId);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    @Description("Отображение общего списка друзей пользователей")
+    public List<User> commonFriends(@PathVariable("id") Integer userId, @PathVariable("otherId") Integer otherId) {
+        return userService.commonFriends(userId, otherId);
     }
 }
