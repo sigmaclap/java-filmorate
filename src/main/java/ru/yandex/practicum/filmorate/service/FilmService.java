@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.List;
@@ -35,11 +36,28 @@ public class FilmService {
         return filmStorage.getFilmsWithCountLikes(count);
     }
 
-    public Film likeFilm(Integer filmId, Integer userId) {
+    public boolean likeFilm(Integer filmId, Integer userId) {
         return filmStorage.likeFilm(filmId, userId);
     }
 
-    public Film deleteLike(Integer filmId, Integer userId) {
+    public boolean deleteLike(Integer filmId, Integer userId) {
         return filmStorage.deleteLike(filmId, userId);
     }
+
+    public List<Genre> getGenres() {
+        return filmStorage.getGenresList();
+    }
+
+    public Genre getGenreById(Integer genreId) {
+        return filmStorage.getGenreById(genreId);
+    }
+
+    public List<Mpa> getMpaList() {
+        return filmStorage.getMpaList();
+    }
+
+    public Mpa getMpaById(Integer mpaId) {
+        return filmStorage.getMpaById(mpaId);
+    }
+
 }
