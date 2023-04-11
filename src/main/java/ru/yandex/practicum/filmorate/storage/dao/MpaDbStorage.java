@@ -30,8 +30,8 @@ public class MpaDbStorage implements MpaStorage {
     }
 
     public Mpa getMpaById(Integer ratingId) {
-        SqlRowSet mpaRows = jdbcTemplate.queryForRowSet("SELECT * FROM PUBLIC.FILMS_RATINGS WHERE RATING_ID = ?"
-                , ratingId);
+        SqlRowSet mpaRows = jdbcTemplate.queryForRowSet("SELECT * FROM PUBLIC.FILMS_RATINGS WHERE RATING_ID = ?",
+                ratingId);
         if (mpaRows.next()) {
             return Mpa.builder()
                     .id(mpaRows.getInt(RATING_ID_COLUMN))
