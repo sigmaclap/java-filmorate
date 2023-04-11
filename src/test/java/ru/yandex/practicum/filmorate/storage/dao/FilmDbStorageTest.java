@@ -34,14 +34,14 @@ class FilmDbStorageTest {
     private final UserStorage userDbStorage;
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
-    private Film film_1;
-    private Film film_2;
-    private User user_1;
-    private User user_2;
+    private Film filmTest1;
+    private Film filmTest2;
+    private User userTest1;
+    private User userTest2;
 
     @BeforeEach
     void setUp() {
-        film_1 = Film.builder()
+        filmTest1 = Film.builder()
                 .mpa(Mpa.builder()
                         .id(1)
                         .build())
@@ -51,7 +51,7 @@ class FilmDbStorageTest {
                 .duration(130)
                 .build();
 
-        film_2 = Film.builder()
+        filmTest2 = Film.builder()
                 .mpa(Mpa.builder()
                         .id(2)
                         .build())
@@ -61,14 +61,14 @@ class FilmDbStorageTest {
                 .duration(210)
                 .build();
 
-        user_1 = User.builder()
+        userTest1 = User.builder()
                 .email("box@gmail.com")
                 .login("boxbox")
                 .name("Саня")
                 .birthday(LocalDate.of(2000, Month.APRIL, 12))
                 .build();
 
-        user_2 = User.builder()
+        userTest2 = User.builder()
                 .email("box2@gmail.com")
                 .login("boxbox2")
                 .name("Саня2")
@@ -78,10 +78,10 @@ class FilmDbStorageTest {
 
     @Test
     void testGetFilmsWithCountLikes() {
-        Film film = filmDbStorage.create(film_1);
-        Film film2 = filmDbStorage.create(film_2);
-        User user = userDbStorage.create(user_1);
-        User user2 = userDbStorage.create(user_2);
+        Film film = filmDbStorage.create(filmTest1);
+        Film film2 = filmDbStorage.create(filmTest2);
+        User user = userDbStorage.create(userTest1);
+        User user2 = userDbStorage.create(userTest2);
         filmDbStorage.likeFilm(film.getId(), user.getId());
         filmDbStorage.likeFilm(film.getId(), user2.getId());
         filmDbStorage.likeFilm(film2.getId(), user.getId());
@@ -94,8 +94,8 @@ class FilmDbStorageTest {
 
     @Test
     void testLikeFilmWithUsersExists() {
-        Film film = filmDbStorage.create(film_1);
-        User user = userDbStorage.create(user_1);
+        Film film = filmDbStorage.create(filmTest1);
+        User user = userDbStorage.create(userTest1);
         boolean likeFilm = filmDbStorage.likeFilm(film.getId(), user.getId());
 
         assertThat(likeFilm).isTrue();
@@ -103,8 +103,8 @@ class FilmDbStorageTest {
 
     @Test
     void testDeleteLikeWithUsersExists() {
-        Film film = filmDbStorage.create(film_1);
-        User user = userDbStorage.create(user_1);
+        Film film = filmDbStorage.create(filmTest1);
+        User user = userDbStorage.create(userTest1);
         filmDbStorage.likeFilm(film.getId(), user.getId());
         boolean deleteLikeFilm = filmDbStorage.deleteLike(film.getId(), user.getId());
 
@@ -113,8 +113,8 @@ class FilmDbStorageTest {
 
     @Test
     void testGetFilmsWithUsersExists() {
-        Film film1 = filmDbStorage.create(film_1);
-        Film film2 = filmDbStorage.create(film_2);
+        Film film1 = filmDbStorage.create(filmTest1);
+        Film film2 = filmDbStorage.create(filmTest2);
         List<Film> filmsList = filmDbStorage.getFilms();
 
         assertThat(filmsList).contains(film1, film2);
@@ -123,7 +123,7 @@ class FilmDbStorageTest {
 
     @Test
     void testFindFilmByIdIsValidData() {
-        filmDbStorage.create(film_1);
+        filmDbStorage.create(filmTest1);
         Optional<Film> filmOptional = Optional.ofNullable(filmDbStorage.findFilmById(1));
         assertThat(filmOptional)
                 .isPresent()
@@ -131,16 +131,16 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void testCreateIsValidData() {
-        Film film = filmDbStorage.create(film_1);
+    void testCreateFilmIsValidData() {
+        Film film = filmDbStorage.create(filmTest1);
         Film filmEx = filmDbStorage.findFilmById(film.getId());
 
         assertThat(filmEx).hasFieldOrPropertyWithValue("id", 1);
     }
 
     @Test
-    void testUpdateIsValidData() {
-        Film film = filmDbStorage.create(film_1);
+    void testUpdateFilmIsValidData() {
+        Film film = filmDbStorage.create(filmTest1);
         film.setName("Другое название 1");
         film.setDescription("Другое описание 1");
         Set<Genre> genresList = new HashSet<>();
