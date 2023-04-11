@@ -50,6 +50,9 @@ public class SQLScripts {
             "ORDER BY COUNT(ulff.FILM_ID) DESC \n" +
             "LIMIT ?";
 
+    public static final String GET_USER_WITH_FRIENDSHIP = "SELECT USER_ID, FRIEND_ID, FRIENDSHIP_STATUS\n" +
+            "FROM PUBLIC.USERS_FRIENDS_STATUS WHERE USER_ID = ?";
+
     public static final String INSERT_USER_LIKE_ON_FILM = "INSERT INTO PUBLIC.USER_LIKES_FOR_FILMS\n" +
             "(FILM_ID, USER_ID) VALUES(?, ?)";
 

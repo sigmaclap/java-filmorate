@@ -5,15 +5,22 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.util.List;
 
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final GenreStorage genreStorage;
 
-    public FilmService(FilmStorage filmStorage) {
+    private final MpaStorage mpaStorage;
+
+    public FilmService(FilmStorage filmStorage, GenreStorage genreStorage, MpaStorage mpaStorage) {
         this.filmStorage = filmStorage;
+        this.genreStorage = genreStorage;
+        this.mpaStorage = mpaStorage;
     }
 
     public List<Film> getFilms() {
@@ -45,19 +52,19 @@ public class FilmService {
     }
 
     public List<Genre> getGenres() {
-        return filmStorage.getGenresList();
+        return genreStorage.getGenresList();
     }
 
     public Genre getGenreById(Integer genreId) {
-        return filmStorage.getGenreById(genreId);
+        return genreStorage.getGenreById(genreId);
     }
 
     public List<Mpa> getMpaList() {
-        return filmStorage.getMpaList();
+        return mpaStorage.getMpaList();
     }
 
     public Mpa getMpaById(Integer mpaId) {
-        return filmStorage.getMpaById(mpaId);
+        return mpaStorage.getMpaById(mpaId);
     }
 
 }

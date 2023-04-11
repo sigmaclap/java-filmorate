@@ -21,6 +21,14 @@ import java.util.Objects;
 @Slf4j
 public class UserDbStorage implements UserStorage {
 
+    private static final String USER_ID_COLUMN = "USER_ID";
+    private static final String FRIEND_ID_COLUMN = "FRIEND_ID";
+    private static final String EMAIL_COLUMN = "EMAIL";
+    private static final String LOGIN_COLUMN = "LOGIN";
+    private static final String NAME_COLUMN = "NAME";
+    private static final String BIRTHDAY_COLUMN = "BIRTHDAY";
+    private static final String FRIENDSHIP_STATUS_COLUMN = "FRIENDSHIP_STATUS";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -36,20 +44,19 @@ public class UserDbStorage implements UserStorage {
 
     private User makeUser(ResultSet rs, int rowNum) throws SQLException {
         User user = User.builder()
-                .id(rs.getInt("user_id"))
-                .email(rs.getString("email"))
-                .login(rs.getString("login"))
-                .name(rs.getString("name"))
-                .birthday(rs.getDate("birthday").toLocalDate())
+                .id(rs.getInt(USER_ID_COLUMN))
+                .email(rs.getString(EMAIL_COLUMN))
+                .login(rs.getString(LOGIN_COLUMN))
+                .name(rs.getString(NAME_COLUMN))
+                .birthday(rs.getDate(BIRTHDAY_COLUMN).toLocalDate())
                 .build();
 
-        SqlRowSet rset = jdbcTemplate.queryForRowSet("SELECT USER_ID, FRIEND_ID, FRIENDSHIP_STATUS\n" +
-                "FROM PUBLIC.USERS_FRIENDS_STATUS WHERE USER_ID = ?", rs.getInt("USER_ID"));
+        SqlRowSet rset = jdbcTemplate.queryForRowSet(SQLScripts.GET_USER_WITH_FRIENDSHIP, rs.getInt(USER_ID_COLUMN));
         while (rset.next()) {
-            int id = rset.getInt("FRIEND_ID");
+            int id = rset.getInt(FRIEND_ID_COLUMN);
             if (id != 0) {
-                boolean isFriendShip = rset.getBoolean("FRIENDSHIP_STATUS");
-                user.getFriendsList().put((long) id, isFriendShip);
+                boolean isFriendship = rset.getBoolean(FRIENDSHIP_STATUS_COLUMN);
+                user.getFriendsList().put((long) id, isFriendship);
             }
         }
         return user;
@@ -66,11 +73,11 @@ public class UserDbStorage implements UserStorage {
         SqlRowSet userRow = jdbcTemplate.queryForRowSet("SELECT * FROM USERS u WHERE EMAIL = ?", user.getEmail());
         if (userRow.next()) {
             return new User(
-                    userRow.getInt("USER_ID"),
-                    userRow.getString("EMAIL"),
-                    userRow.getString("LOGIN"),
-                    userRow.getString("NAME"),
-                    Objects.requireNonNull(userRow.getDate("BIRTHDAY")).toLocalDate());
+                    userRow.getInt(USER_ID_COLUMN),
+                    userRow.getString(EMAIL_COLUMN),
+                    userRow.getString(LOGIN_COLUMN),
+                    userRow.getString(NAME_COLUMN),
+                    Objects.requireNonNull(userRow.getDate(BIRTHDAY_COLUMN)).toLocalDate());
         } else {
             log.info("Пользователь с email {} не найден.", user.getEmail());
             throw new InvalidDataException("Пустое значение User");
@@ -86,11 +93,11 @@ public class UserDbStorage implements UserStorage {
         SqlRowSet userRow = jdbcTemplate.queryForRowSet(SQLScripts.GET_USER, user.getId());
         if (userRow.next()) {
             return User.builder()
-                    .id(userRow.getInt("USER_ID"))
-                    .email(userRow.getString("EMAIL"))
-                    .login(userRow.getString("LOGIN"))
-                    .name(userRow.getString("NAME"))
-                    .birthday(userRow.getDate("BIRTHDAY").toLocalDate())
+                    .id(userRow.getInt(USER_ID_COLUMN))
+                    .email(userRow.getString(EMAIL_COLUMN))
+                    .login(userRow.getString(LOGIN_COLUMN))
+                    .name(userRow.getString(NAME_COLUMN))
+                    .birthday(Objects.requireNonNull(userRow.getDate(BIRTHDAY_COLUMN).toLocalDate()))
                     .build();
         } else {
             log.info("Пользователь с идентификатором {} не найден, обновление не удалось.", user.getId());
@@ -102,7 +109,8 @@ public class UserDbStorage implements UserStorage {
     public User findUserById(Integer userId) {
         String sqlQuery = SQLScripts.GET_USER;
         List<User> listUsers = findUsers();
-        if (listUsers.stream().noneMatch(user -> user.getId().equals(userId))) {
+        boolean isUserExists = listUsers.stream().noneMatch(user -> user.getId().equals(userId));
+        if (isUserExists) {
             log.info("Пользователь с идентификатором {} не найден.", userId);
             throw new UserNotFoundException("Пользователь не найден");
         }
@@ -139,9 +147,9 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public boolean addFriend(Integer userId, Integer friendId, boolean isFriendShip) {
+    public boolean addFriend(Integer userId, Integer friendId, boolean isFriendship) {
         String sqlAdd = SQLScripts.INSERT_FRIEND_ON_USER;
-        if (isFriendShip) {
+        if (isFriendship) {
             String sql = SQLScripts.UPDATE_USER_FRIENDSHIP;
             jdbcTemplate.update(sql, friendId, userId, true);
             return jdbcTemplate.update(sqlAdd, userId, friendId, true) > 0;
@@ -150,9 +158,9 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public boolean removeFriendToUser(Integer userId, Integer friendId, boolean isFriendShip) {
+    public boolean removeFriendToUser(Integer userId, Integer friendId, boolean isFriendship) {
         String sqlDelete = SQLScripts.DELETE_FRIEND_ON_USER;
-        if (isFriendShip) {
+        if (isFriendship) {
             String sql = SQLScripts.UPDATE_USER_FRIENDSHIP;
             return jdbcTemplate.update(sql, friendId, userId, false) > 0;
         }

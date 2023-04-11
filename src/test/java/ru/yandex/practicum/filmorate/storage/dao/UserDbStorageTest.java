@@ -52,7 +52,7 @@ class UserDbStorageTest {
     }
 
     @Test
-    void findUsers() {
+    void testFindUsersIsValidData() {
         User user = userStorage.create(user_1);
         User user2 = userStorage.create(user_2);
         List<User> usersEx = userStorage.findUsers();
@@ -61,7 +61,7 @@ class UserDbStorageTest {
     }
 
     @Test
-    void create() {
+    void testCreateIsValidData() {
         User user = userStorage.create(user_1);
         User exUser = userStorage.findUserById(user.getId());
 
@@ -69,7 +69,7 @@ class UserDbStorageTest {
     }
 
     @Test
-    void update() {
+    void testUpdateIsValidData() {
         User user = userStorage.create(user_1);
         user.setName("Дима");
         user.setLogin("vovain");
@@ -81,7 +81,7 @@ class UserDbStorageTest {
     }
 
     @Test
-    void findUserById() {
+    void testFindUserByIdIsValidData() {
         User user = userStorage.create(user_1);
         User exUser = userStorage.findUserById(user.getId());
 
@@ -89,7 +89,7 @@ class UserDbStorageTest {
     }
 
     @Test
-    void getFriendsUser() {
+    void testGetFriendsUserIsValidData() {
         User user = userStorage.create(user_1);
         User user1 = userStorage.create(user_2);
         userStorage.addFriend(user.getId(), user1.getId(), false);
@@ -101,7 +101,7 @@ class UserDbStorageTest {
     }
 
     @Test
-    void commonFriends() {
+    void testCommonFriendsIsValidData() {
         User user1 = userStorage.create(user_1);
         User user2 = userStorage.create(user_2);
         User user3 = userStorage.create(user_3);
@@ -113,7 +113,7 @@ class UserDbStorageTest {
     }
 
     @Test
-    void addFriend() {
+    void testAddFriendIsValidData() {
         User user = userStorage.create(user_1);
         User user1 = userStorage.create(user_2);
         userStorage.addFriend(user.getId(), user1.getId(), false);
@@ -125,7 +125,7 @@ class UserDbStorageTest {
     }
 
     @Test
-    void removeFriendToUser() {
+    void testRemoveFriendToUserIsValidData() {
         User user = userStorage.create(user_1);
         User user1 = userStorage.create(user_2);
         userStorage.addFriend(user.getId(), user1.getId(), false);

@@ -12,6 +12,8 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -30,6 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FilmDbStorageTest {
     private final FilmStorage filmDbStorage;
     private final UserStorage userDbStorage;
+    private final GenreStorage genreStorage;
+    private final MpaStorage mpaStorage;
     private Film film_1;
     private Film film_2;
     private User user_1;
@@ -73,7 +77,7 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void getFilmsWithCountLikes() {
+    void testGetFilmsWithCountLikes() {
         Film film = filmDbStorage.create(film_1);
         Film film2 = filmDbStorage.create(film_2);
         User user = userDbStorage.create(user_1);
@@ -89,7 +93,7 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void likeFilm() {
+    void testLikeFilmWithUsersExists() {
         Film film = filmDbStorage.create(film_1);
         User user = userDbStorage.create(user_1);
         boolean likeFilm = filmDbStorage.likeFilm(film.getId(), user.getId());
@@ -98,7 +102,7 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void deleteLike() {
+    void testDeleteLikeWithUsersExists() {
         Film film = filmDbStorage.create(film_1);
         User user = userDbStorage.create(user_1);
         filmDbStorage.likeFilm(film.getId(), user.getId());
@@ -108,7 +112,7 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void getFilms() {
+    void testGetFilmsWithUsersExists() {
         Film film1 = filmDbStorage.create(film_1);
         Film film2 = filmDbStorage.create(film_2);
         List<Film> filmsList = filmDbStorage.getFilms();
@@ -118,7 +122,7 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void findFilmById() {
+    void testFindFilmByIdIsValidData() {
         filmDbStorage.create(film_1);
         Optional<Film> filmOptional = Optional.ofNullable(filmDbStorage.findFilmById(1));
         assertThat(filmOptional)
@@ -127,7 +131,7 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void create() {
+    void testCreateIsValidData() {
         Film film = filmDbStorage.create(film_1);
         Film filmEx = filmDbStorage.findFilmById(film.getId());
 
@@ -135,7 +139,7 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void update() {
+    void testUpdateIsValidData() {
         Film film = filmDbStorage.create(film_1);
         film.setName("Другое название 1");
         film.setDescription("Другое описание 1");
@@ -155,31 +159,31 @@ class FilmDbStorageTest {
 
 
     @Test
-    void getGenreById() {
-        Genre genre = filmDbStorage.getGenreById(1);
-        Genre genre2 = filmDbStorage.getGenreById(2);
+    void testGetGenreByIdIsValidData() {
+        Genre genre = genreStorage.getGenreById(1);
+        Genre genre2 = genreStorage.getGenreById(2);
 
         assertThat(genre).hasFieldOrPropertyWithValue("name", "Комедия");
         assertThat(genre2).hasFieldOrPropertyWithValue("name", "Драма");
     }
 
     @Test
-    void getGenresList() {
-        List<Genre> genreList = filmDbStorage.getGenresList();
+    void testGetGenresListIsValidData() {
+        List<Genre> genreList = genreStorage.getGenresList();
 
         assertThat(genreList).hasSize(6);
     }
 
     @Test
-    void getMpaList() {
-        List<Mpa> mpaList = filmDbStorage.getMpaList();
+    void testGetMpaListIsValidData() {
+        List<Mpa> mpaList = mpaStorage.getMpaList();
 
         assertThat(mpaList).hasSize(5);
     }
 
     @Test
-    void getMpaById() {
-        Mpa mpa1 = filmDbStorage.getMpaById(1);
+    void testGetMpaByIdIsValidData() {
+        Mpa mpa1 = mpaStorage.getMpaById(1);
 
         assertThat(mpa1).hasFieldOrPropertyWithValue("name", "G");
     }

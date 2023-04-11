@@ -13,11 +13,11 @@ public interface UserStorage {
 
     User findUserById(Integer userId);
 
-    boolean addFriend(Integer userId, Integer friendId, boolean isFriendShip);
+    boolean addFriend(Integer userId, Integer friendId, boolean isFriendship);
 
     List<User> getFriendsUser(Integer userId);
 
-    boolean removeFriendToUser(Integer userId, Integer friendId, boolean isFriendShip);
+    boolean removeFriendToUser(Integer userId, Integer friendId, boolean isFriendship);
 
     List<User> commonFriends(Integer userId, Integer otherId);
 
