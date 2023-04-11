@@ -190,8 +190,7 @@ public class FilmDbStorage implements FilmStorage {
                 .duration(rs.getInt(DURATION_COLUMN))
                 .build();
 
-        SqlRowSet rset = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_ID_WITH_GENRE
-                , rs.getInt(FILM_ID_COLUMN));
+        SqlRowSet rset = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_ID_WITH_GENRE,rs.getInt(FILM_ID_COLUMN));
         film.setGenres(new HashSet<>());
         while (rset.next()) {
             int id = rset.getInt(GENRE_ID_COLUMN);
