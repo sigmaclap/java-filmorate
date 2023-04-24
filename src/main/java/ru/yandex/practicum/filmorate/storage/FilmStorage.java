@@ -15,8 +15,8 @@ public interface FilmStorage {
 
     List<Film> getFilmsWithCountLikes(Integer count);
 
-    Film likeFilm(Integer filmId, Integer userId);
+    boolean likeFilm(Integer filmId, Integer userId);
 
-    Film deleteLike(Integer filmId, Integer userId);
+    boolean deleteLike(Integer filmId, Integer userId);
 
 }

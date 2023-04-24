@@ -17,7 +17,7 @@ public class ErrorResponse {
     private String errorMessage;
     private static final Gson gson = new Gson();
 
-    public static String Response(String errorMessage) {
+    public static String customResponse(String errorMessage) {
         ObjectMapper objectMapper = new ObjectMapper();
         ErrorResponse errorResponse = new ErrorResponse(errorMessage);
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
