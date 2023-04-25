@@ -67,4 +67,11 @@ public class FilmService {
         return mpaStorage.getMpaById(mpaId);
     }
 
+    public List<Film> getFilmByTitleOrDirector(String queryName, String options) {
+        return filmStorage.getFilmByTitleOrDirector(queryName, options);
+    }
+
+    public List<Film> getFilmByDirector(Integer directorId, String sortBy) {
+        return filmStorage.getFilmByDirector(directorId, sortBy);
+    }
 }
