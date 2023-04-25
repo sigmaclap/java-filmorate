@@ -1,13 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.dao.constants;
 
 public class SQLScripts {
-    public static final String GET_ALL_FILMS = "SELECT f.FILM_ID , f.RATING_ID ," +
+    public static final String GET_ALL_FILMS = "SELECT DISTINCT f.FILM_ID , f.RATING_ID ," +
             " f.NAME , f.DESCRIPTION , f.RELEASE_DATE ," +
-            " f.DURATION , fr.NAME as R_NAME, g.GENRE_ID , g.NAME AS G_NAME \n" +
+            " f.DURATION , fr.NAME as R_NAME \n" +
             "FROM FILMS f \n" +
             "JOIN FILMS_RATINGS fr ON f.RATING_ID = fr.RATING_ID\n" +
-            "LEFT JOIN FILMS_CATEGORY fc ON f.FILM_ID = fc.FILM_ID \n" +
-            "LEFT JOIN GENRE g ON g.GENRE_ID = fc.GENRE_ID;";
+            "LEFT JOIN FILMS_CATEGORY fc ON f.FILM_ID = fc.FILM_ID";
 
     public static final String GET_FILM_WITH_ID = "SELECT f.FILM_ID , f.RATING_ID , f.NAME ," +
             "f.DESCRIPTION , f.RELEASE_DATE , f.DURATION , fr.NAME as R_NAME \n" +
@@ -91,4 +90,60 @@ public class SQLScripts {
             "WHERE USER_ID=? AND FRIEND_ID=?";
 
     public static final String GET_USER = "SELECT * FROM USERS u WHERE USER_ID = ?";
+
+    public static final String GET_LIKE_TITLE_PROPERTY = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
+            " f.RELEASE_DATE, f.DURATION , fr.RATING_ID , fr.NAME as R_NAME ," +
+            " g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
+            "FROM FILMS f \n" +
+            "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
+            "LEFT JOIN FILMS_CATEGORY fc ON fc.FILM_ID = f.FILM_ID \n" +
+            "LEFT JOIN GENRE g ON g.GENRE_ID = fc.GENRE_ID \n" +
+            "WHERE LOWER(f.NAME) LIKE '%' || (?) || '%' GROUP BY f.FILM_ID, g.GENRE_ID\n" +
+            "ORDER BY COUNT(ulff.FILM_ID) DESC";
+
+    public static final String GET_LIKE_DIRECTOR_PROPERTY = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ,f.RELEASE_DATE, f.DURATION , " +
+            "fr.RATING_ID , fr.NAME as R_NAME, COUNT(ulff.FILM_ID) FROM FILMS f \n" +
+            "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
+            "JOIN DIRECTOR_FILMS df ON df.FILM_ID = f.FILM_ID \n" +
+            "JOIN DIRECTOR d ON d.DIRECTOR_ID = df.DIRECTOR_ID \n" +
+            "WHERE LOWER(d.NAME) LIKE '%' || (?) || '%' GROUP BY f.FILM_ID \n" +
+            "ORDER BY COUNT(ulff.FILM_ID) DESC";
+
+    public static final String GET_LIKE_TITLE_AND_DIRECTOR_PROPERTY = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ,f.RELEASE_DATE, f.DURATION , " +
+            "fr.RATING_ID , fr.NAME as R_NAME , g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
+            "FROM FILMS f LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
+            "LEFT JOIN FILMS_CATEGORY fc ON fc.FILM_ID = f.FILM_ID \n" +
+            "LEFT JOIN GENRE g ON g.GENRE_ID = fc.GENRE_ID \n" +
+            "LEFT JOIN DIRECTOR_FILMS df ON df.FILM_ID = f.FILM_ID \n" +
+            "LEFT JOIN DIRECTOR d ON d.DIRECTOR_ID = df.DIRECTOR_ID \n" +
+            "WHERE (LOWER(f.NAME) LIKE '%' || (?) || '%' OR LOWER(d.NAME) LIKE '%' || (?) || '%')\n" +
+            "GROUP BY f.FILM_ID, g.GENRE_ID \n" +
+            "ORDER BY COUNT(ulff.FILM_ID) DESC";
+
+    public static final String GET_LIST_DIRECTOR_BY_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION , f.RELEASE_DATE, f.DURATION , fr.RATING_ID , " +
+            "fr.NAME as R_NAME , g.GENRE_ID , g.NAME AS G_NAME , YEAR(f.RELEASE_DATE) AS years \n" +
+            "FROM FILMS f \n" +
+            "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
+            "LEFT JOIN FILMS_CATEGORY fc ON fc.FILM_ID = f.FILM_ID \n" +
+            "LEFT JOIN GENRE g ON g.GENRE_ID = fc.GENRE_ID \n" +
+            "JOIN DIRECTOR_FILMS df ON df.FILM_ID = f.FILM_ID \n" +
+            "WHERE df.DIRECTOR_ID = ?\n" +
+            "GROUP BY f.FILM_ID \n" +
+            "ORDER BY years ASC";
+
+    public static final String GET_LIST_DIRECTOR_BY_LIKE = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION , f.RELEASE_DATE, f.DURATION , fr.RATING_ID , " +
+            "fr.NAME as R_NAME , g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.USER_ID) AS likes \n" +
+            "FROM FILMS f \n" +
+            "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
+            "LEFT JOIN FILMS_CATEGORY fc ON fc.FILM_ID = f.FILM_ID \n" +
+            "LEFT JOIN GENRE g ON g.GENRE_ID = fc.GENRE_ID \n" +
+            "JOIN DIRECTOR_FILMS df ON df.FILM_ID = f.FILM_ID \n" +
+            "WHERE df.DIRECTOR_ID = ?\n" +
+            "GROUP BY f.FILM_ID \n" +
+            "ORDER BY likes ASC";
 }

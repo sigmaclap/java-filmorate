@@ -51,4 +51,16 @@ public class FilmController {
     public boolean deleteLike(@PathVariable("id") Integer filmId, @PathVariable("userId") Integer userId) {
         return filmService.deleteLike(filmId, userId);
     }
+
+    @GetMapping("/search")
+    public List<Film> getFilmByTitleOrDirector(@RequestParam(name = "query") String queryName,
+                                               @RequestParam(name = "by", required = false) String options) {
+        return filmService.getFilmByTitleOrDirector(queryName, options);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmByDirector(@PathVariable("directorId") Integer directorId,
+                                        @RequestParam(name = "sortBy") String sortBy) {
+        return filmService.getFilmByDirector(directorId, sortBy);
+    }
 }

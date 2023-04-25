@@ -7,18 +7,17 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -36,16 +35,20 @@ public class FilmDbStorage implements FilmStorage {
     private static final String GENRE_NAME_COLUMN = "NAME";
     private static final String ERROR_EMPTY_FILM_VALUE = "Пустое значение, Фильм не создан";
     private static final String ERROR_EMPTY_USER_VALUE = "Пользователь не найден";
+    private static final String TITLE_PROPERTY = "title";
+    private static final String DIRECTOR_PROPERTY = "director";
 
     private final JdbcTemplate jdbcTemplate;
 
     private final GenreDbStorage genreDbStorage;
+    private final DirectorDbStorage directorStorage;
 
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, GenreDbStorage genreDbStorage) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate, GenreDbStorage genreDbStorage, DirectorDbStorage directorStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreDbStorage = genreDbStorage;
+        this.directorStorage = directorStorage;
     }
 
     @Override
@@ -76,7 +79,9 @@ public class FilmDbStorage implements FilmStorage {
         SqlRowSet filmRow = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_WITH_RATING_NAME, film.getName());
         if (filmRow.next()) {
             int idFilm = filmRow.getInt(FILM_ID_COLUMN);
+            film.setId(idFilm);
             updateFilmGenres(film, idFilm);
+            updateDirectors(film, idFilm);
             return Film.builder()
                     .id(filmRow.getInt(FILM_ID_COLUMN))
                     .name(filmRow.getString(NAME_COLUMN))
@@ -87,6 +92,7 @@ public class FilmDbStorage implements FilmStorage {
                             .name(filmRow.getString(RATING_NAME_COLUMN))
                             .build())
                     .genres(film.getGenres())
+                    .directors(film.getDirectors())
                     .build();
         } else {
             log.info("Фильм с именем {} не найден.", film.getName());
@@ -111,6 +117,28 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    private void updateDirectors(Film film, Integer filmId) {
+        if (film.getDirectors() != null) {
+            List<Integer> directorsId = film.getDirectors().stream().map(Director::getId).collect(Collectors.toList());
+            if (!directorsId.isEmpty()) {
+                String directors = directorsId.stream()
+                        .map(id -> String.format("(%d,%d)", filmId, id)).collect(Collectors.joining(","));
+                jdbcTemplate.update("INSERT INTO PUBLIC.DIRECTOR_FILMS(FILM_ID, DIRECTOR_ID) VALUES" + directors);
+                String sql2 = "select g.DIRECTOR_ID as DIRECTOR_ID ," +
+                        " g.NAME as NAME, fc.FILM_ID \n" +
+                        "from DIRECTOR g  \n" +
+                        "join DIRECTOR_FILMS fc ON g.DIRECTOR_ID  = fc.DIRECTOR_ID \n" +
+                        "WHERE fc.FILM_ID = ? \n" +
+                        "ORDER BY g.DIRECTOR_ID ASC";
+                film.setDirectors(new ArrayList<>(jdbcTemplate.query(sql2, (rs, rowNum) -> directorStorage.makeDir(rs),
+                        filmId)));
+            }
+        } else {
+            jdbcTemplate.update("DELETE FROM DIRECTOR_FILMS WHERE FILM_ID = ?", filmId);
+            film.setDirectors(Collections.emptyList());
+        }
+    }
+
     @Override
     public Film update(Film film) {
         Integer mpaId;
@@ -126,6 +154,7 @@ public class FilmDbStorage implements FilmStorage {
         if (rs.next()) {
             int idFilm = rs.getInt(FILM_ID_COLUMN);
             updateFilmGenres(film, idFilm);
+            updateDirectors(film, idFilm);
             return Film.builder()
                     .id(rs.getInt(FILM_ID_COLUMN))
                     .mpa(Mpa.builder().id(rs.getInt(RATING_ID_COLUMN))
@@ -136,6 +165,7 @@ public class FilmDbStorage implements FilmStorage {
                     .releaseDate(Objects.requireNonNull(rs.getDate(RELEASE_DATE_COLUMN).toLocalDate()))
                     .duration(rs.getInt(DURATION_COLUMN))
                     .genres(film.getGenres())
+                    .directors(film.getDirectors())
                     .build();
         } else {
             log.info("Фильм с идентификатором {} не найден.", film.getId());
@@ -178,6 +208,51 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    @Override
+    public List<Film> getFilmByTitleOrDirector(String queryName, String options) {
+        String opt = options.replaceAll("\\s+", "");
+        String[] optionsParam = opt.split(",");
+        if (TITLE_PROPERTY.equals(options)) {
+            String sqlQuery = SQLScripts.GET_LIKE_TITLE_PROPERTY;
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, queryName.toLowerCase());
+        } else if (DIRECTOR_PROPERTY.equals(options)) {
+            String sqlQuery = SQLScripts.GET_LIKE_DIRECTOR_PROPERTY;
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, queryName.toLowerCase());
+        } else if (optionsParam.length == 2 &&
+                ((optionsParam[0].equals(DIRECTOR_PROPERTY) && optionsParam[1].equals(TITLE_PROPERTY)) ||
+                        (optionsParam[0].equals(TITLE_PROPERTY) && optionsParam[1].equals(DIRECTOR_PROPERTY)))) {
+            String sqlQuery = SQLScripts.GET_LIKE_TITLE_AND_DIRECTOR_PROPERTY;
+            return jdbcTemplate.query(con -> {
+                PreparedStatement ps = con.prepareStatement(sqlQuery);
+                ps.setString(1, queryName.toLowerCase());
+                ps.setString(2, queryName.toLowerCase());
+                ps.executeQuery();
+                return ps;
+            }, this::mapRowToFilm);
+        } else {
+            log.info("Фильм по подстроке {} не найден.", queryName);
+            throw new FilmNotFoundException("Фильм не найден");
+        }
+    }
+
+    @Override
+    public List<Film> getFilmByDirector(Integer directorId, String sortBy) {
+        if (directorStorage.getDirectorById(directorId) == null) {
+            log.info("Режиссер по идентификатору {} не найден.", directorId);
+            throw new FilmNotFoundException("Режиссер не найден");
+        }
+        if ("year".equals(sortBy)) {
+            String sqlQuery = SQLScripts.GET_LIST_DIRECTOR_BY_YEAR;
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
+        } else if ("likes".equals(sortBy)) {
+            String sqlQuery = SQLScripts.GET_LIST_DIRECTOR_BY_LIKE;
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
+        } else {
+            log.info("Фильм по идентификатору {} не найден.", directorId);
+            throw new FilmNotFoundException("Фильм не найден");
+        }
+    }
+
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = Film.builder()
                 .id(rs.getInt(FILM_ID_COLUMN))
@@ -189,8 +264,8 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rs.getDate(RELEASE_DATE_COLUMN).toLocalDate())
                 .duration(rs.getInt(DURATION_COLUMN))
                 .build();
-
-        SqlRowSet rset = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_ID_WITH_GENRE,rs.getInt(FILM_ID_COLUMN));
+        film.setDirectors(directorStorage.getDirectorsByFilmId(rs.getInt(FILM_ID_COLUMN)));
+        SqlRowSet rset = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_ID_WITH_GENRE, rs.getInt(FILM_ID_COLUMN));
         film.setGenres(new HashSet<>());
         while (rset.next()) {
             int id = rset.getInt(GENRE_ID_COLUMN);
