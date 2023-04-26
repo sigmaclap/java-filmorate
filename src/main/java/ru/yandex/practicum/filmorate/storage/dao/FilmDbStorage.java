@@ -126,7 +126,7 @@ public class FilmDbStorage implements FilmStorage {
                         .map(id -> String.format("(%d,%d)", filmId, id)).collect(Collectors.joining(","));
                 for (Integer directorIds : directorsId) {
                     if (directorStorage.getDirectorById(directorIds) == null) {
-                        log.info("Режиссер c идентификатором не существует {} не найден.", directorIds);
+                        log.info("Режиссер c идентификатором не существует {}.", directorIds);
                         throw new InvalidDataException("Режиссер с данным ID не существует");
                     }
                 }
