@@ -8,7 +8,7 @@ drop table IF EXISTS user_likes_for_films CASCADE;
 drop table IF EXISTS director CASCADE;
 drop table IF EXISTS director_films CASCADE;
 drop table IF EXISTS review CASCADE;
-drop table IF EXISTS review_likes cascade;
+drop table IF EXISTS review_likes CASCADE;
 
 
 create TABLE IF NOT EXISTS films_ratings (
@@ -72,9 +72,9 @@ create table IF NOT EXISTS review (
 	user_id int NOT NULL REFERENCES users(user_id) ON delete CASCADE,
 	useful int
 );
-
+--
 create table IF NOT EXISTS review_likes (
     review_id int NOT NULL REFERENCES review(review_id) ON delete CASCADE,
     user_id int NOT NULL REFERENCES users(user_id) ON delete CASCADE,
-    like boolean NOT NULL
-);
+    review_like boolean NOT NULL
+)
