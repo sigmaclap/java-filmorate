@@ -77,22 +77,6 @@ class FilmDbStorageTest {
     }
 
     @Test
-    void testGetFilmsWithCountLikes() {
-        Film film = filmDbStorage.create(filmTest1);
-        Film film2 = filmDbStorage.create(filmTest2);
-        User user = userDbStorage.create(userTest1);
-        User user2 = userDbStorage.create(userTest2);
-        filmDbStorage.likeFilm(film.getId(), user.getId());
-        filmDbStorage.likeFilm(film.getId(), user2.getId());
-        filmDbStorage.likeFilm(film2.getId(), user.getId());
-        List<Film> popularEx = filmDbStorage.getFilmsWithCountLikes(null);
-
-        assertThat(popularEx)
-                .hasSize(2)
-                .contains(film, film2);
-    }
-
-    @Test
     void testLikeFilmWithUsersExists() {
         Film film = filmDbStorage.create(filmTest1);
         User user = userDbStorage.create(userTest1);

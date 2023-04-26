@@ -176,13 +176,19 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsWithCountLikes(Integer count) {
-        String sqlQuery = SQLScripts.GET_FILMS_WITH_COUNT_LIKES;
-        if (count == null) {
-            count = 10;
-            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
+    public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        if (genreId == 0 && year == 0) {
+            String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_YEAR;
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count).stream().distinct().collect(Collectors.toList());
+        } else if (genreId == 0) {
+            String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_WITH_YEAR;
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count).stream().distinct().collect(Collectors.toList());
+        } else if (year == 0) {
+            String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_WITHOUT_YEAR;
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count).stream().distinct().collect(Collectors.toList());
         } else {
-            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
+            String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_YEAR;
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count).stream().distinct().collect(Collectors.toList());
         }
     }
 

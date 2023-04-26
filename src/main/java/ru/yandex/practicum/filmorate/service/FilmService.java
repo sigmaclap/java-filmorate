@@ -39,8 +39,8 @@ public class FilmService {
         return filmStorage.update(film);
     }
 
-    public List<Film> getFilmsWithCountLikes(Integer count) {
-        return filmStorage.getFilmsWithCountLikes(count);
+    public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getMostPopularFilms(count, genreId, year);
     }
 
     public boolean likeFilm(Integer filmId, Integer userId) {
