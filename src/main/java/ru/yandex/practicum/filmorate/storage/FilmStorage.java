@@ -13,7 +13,7 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    List<Film> getFilmsWithCountLikes(Integer count);
+    List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year);
 
     boolean likeFilm(Integer filmId, Integer userId);
 

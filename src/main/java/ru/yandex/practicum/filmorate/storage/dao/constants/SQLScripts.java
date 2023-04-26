@@ -37,7 +37,7 @@ public class SQLScripts {
     public static final String GET_FILM_WITH_FILM_ID = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
             "JOIN FILMS_RATINGS fr ON fr.RATING_ID = f.RATING_ID WHERE f.FILM_ID = ?";
 
-    public static final String GET_FILMS_WITH_COUNT_LIKES = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
+    public static final String GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
             " f.RELEASE_DATE, f.DURATION , fr.RATING_ID , fr.NAME as R_NAME ," +
             " g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
             "FROM FILMS f \n" +
@@ -45,7 +45,46 @@ public class SQLScripts {
             "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
             "LEFT JOIN FILMS_CATEGORY fc ON fc.FILM_ID = f.FILM_ID \n" +
             "LEFT JOIN GENRE g ON g.GENRE_ID = fc.GENRE_ID \n" +
-            "GROUP BY f.FILM_ID \n" +
+            "GROUP BY f.FILM_ID, g.GENRE_ID \n" +
+            "ORDER BY COUNT(ulff.FILM_ID) DESC \n" +
+            "LIMIT ?";
+
+    public static final String GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
+            " f.RELEASE_DATE, f.DURATION , fr.RATING_ID , fr.NAME as R_NAME ," +
+            " g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
+            "FROM FILMS f \n" +
+            "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
+            "LEFT JOIN FILMS_CATEGORY fc ON fc.FILM_ID = f.FILM_ID \n" +
+            "LEFT JOIN GENRE g ON g.GENRE_ID = fc.GENRE_ID \n" +
+            "WHERE g.GENRE_ID = ? AND EXTRACT(YEAR FROM f.RELEASE_DATE) = ? \n" +
+            "GROUP BY f.FILM_ID, g.GENRE_ID  \n" +
+            "ORDER BY COUNT(ulff.FILM_ID) DESC \n" +
+            "LIMIT ?";
+
+    public static final String GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_WITHOUT_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
+            " f.RELEASE_DATE, f.DURATION , fr.RATING_ID , fr.NAME as R_NAME ," +
+            " g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
+            "FROM FILMS f \n" +
+            "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
+            "LEFT JOIN FILMS_CATEGORY fc ON fc.FILM_ID = f.FILM_ID \n" +
+            "LEFT JOIN GENRE g ON g.GENRE_ID = fc.GENRE_ID \n" +
+            "WHERE g.GENRE_ID = ? \n" +
+            "GROUP BY f.FILM_ID, g.GENRE_ID  \n" +
+            "ORDER BY COUNT(ulff.FILM_ID) DESC \n" +
+            "LIMIT ?";
+
+    public static final String GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_WITH_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
+            " f.RELEASE_DATE, f.DURATION , fr.RATING_ID , fr.NAME as R_NAME ," +
+            " g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
+            "FROM FILMS f \n" +
+            "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
+            "LEFT JOIN FILMS_CATEGORY fc ON fc.FILM_ID = f.FILM_ID \n" +
+            "LEFT JOIN GENRE g ON g.GENRE_ID = fc.GENRE_ID \n" +
+            "WHERE EXTRACT(YEAR FROM f.RELEASE_DATE) = ? \n" +
+            "GROUP BY f.FILM_ID, g.GENRE_ID \n" +
             "ORDER BY COUNT(ulff.FILM_ID) DESC \n" +
             "LIMIT ?";
 
