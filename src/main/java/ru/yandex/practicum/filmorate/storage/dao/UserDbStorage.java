@@ -28,6 +28,7 @@ public class UserDbStorage implements UserStorage {
     private static final String NAME_COLUMN = "NAME";
     private static final String BIRTHDAY_COLUMN = "BIRTHDAY";
     private static final String FRIENDSHIP_STATUS_COLUMN = "FRIENDSHIP_STATUS";
+    private static final String ERROR_USER_NOT_FOUND = "Пользователь не найден";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -101,7 +102,7 @@ public class UserDbStorage implements UserStorage {
                     .build();
         } else {
             log.info("Пользователь с идентификатором {} не найден, обновление не удалось.", user.getId());
-            throw new UserNotFoundException("Пользователь не найден");
+            throw new UserNotFoundException(ERROR_USER_NOT_FOUND);
         }
     }
 
@@ -112,7 +113,7 @@ public class UserDbStorage implements UserStorage {
         boolean isUserExists = listUsers.stream().noneMatch(user -> user.getId().equals(userId));
         if (isUserExists) {
             log.info("Пользователь с идентификатором {} не найден.", userId);
-            throw new UserNotFoundException("Пользователь не найден");
+            throw new UserNotFoundException(ERROR_USER_NOT_FOUND);
         }
         return jdbcTemplate.queryForObject(sqlQuery, this::makeUser, userId);
     }
@@ -142,7 +143,7 @@ public class UserDbStorage implements UserStorage {
             throw new UserNotFoundException("Друг не найден");
         } else {
             log.info("Пользователь с идентификатором {} не найден.", userId);
-            throw new UserNotFoundException("Пользователь не найден");
+            throw new UserNotFoundException(ERROR_USER_NOT_FOUND);
         }
     }
 

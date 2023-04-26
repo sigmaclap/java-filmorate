@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.InvalidDataException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -37,6 +38,7 @@ public class FilmDbStorage implements FilmStorage {
     private static final String ERROR_EMPTY_USER_VALUE = "Пользователь не найден";
     private static final String TITLE_PROPERTY = "title";
     private static final String DIRECTOR_PROPERTY = "director";
+    private static final String ERROR_USER_ID_NOT_FOUND = "Пользователь с идентификатором {} не найден.";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -75,7 +77,6 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = SQLScripts.ADD_NEW_FILM;
         jdbcTemplate.update(sqlQuery, film.getMpa().getId(), film.getName(),
                 film.getDescription(), film.getReleaseDate(), film.getDuration());
-
         SqlRowSet filmRow = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_WITH_RATING_NAME, film.getName());
         if (filmRow.next()) {
             int idFilm = filmRow.getInt(FILM_ID_COLUMN);
@@ -123,14 +124,15 @@ public class FilmDbStorage implements FilmStorage {
             if (!directorsId.isEmpty()) {
                 String directors = directorsId.stream()
                         .map(id -> String.format("(%d,%d)", filmId, id)).collect(Collectors.joining(","));
+                for (Integer directorIds : directorsId) {
+                    if (directorStorage.getDirectorById(directorIds) == null) {
+                        log.info("Режиссер c идентификатором не существует {}.", directorIds);
+                        throw new InvalidDataException("Режиссер с данным ID не существует");
+                    }
+                }
                 jdbcTemplate.update("INSERT INTO PUBLIC.DIRECTOR_FILMS(FILM_ID, DIRECTOR_ID) VALUES" + directors);
-                String sql2 = "select g.DIRECTOR_ID as DIRECTOR_ID ," +
-                        " g.NAME as NAME, fc.FILM_ID \n" +
-                        "from DIRECTOR g  \n" +
-                        "join DIRECTOR_FILMS fc ON g.DIRECTOR_ID  = fc.DIRECTOR_ID \n" +
-                        "WHERE fc.FILM_ID = ? \n" +
-                        "ORDER BY g.DIRECTOR_ID ASC";
-                film.setDirectors(new ArrayList<>(jdbcTemplate.query(sql2, (rs, rowNum) -> directorStorage.makeDir(rs),
+                film.setDirectors(new ArrayList<>(jdbcTemplate.query(SQLScripts.GET_DIRECTOR_ID_FOR_UPDATE,
+                        (rs, rowNum) -> directorStorage.makeDir(rs),
                         filmId)));
             }
         } else {
@@ -191,7 +193,7 @@ public class FilmDbStorage implements FilmStorage {
             log.info("Лайк от пользователя {} на фильм {} успешно добавлен", userId, filmId);
             return true;
         } else {
-            log.info("Пользователь с идентификатором {} не найден.", userId);
+            log.info(ERROR_USER_ID_NOT_FOUND, userId);
             throw new UserNotFoundException(ERROR_EMPTY_USER_VALUE);
         }
     }
@@ -203,7 +205,7 @@ public class FilmDbStorage implements FilmStorage {
             log.info("Лайк от пользователя {} на фильм {} успешно удален", userId, filmId);
             return true;
         } else {
-            log.info("Пользователь с идентификатором {} не найден.", userId);
+            log.info(ERROR_USER_ID_NOT_FOUND, userId);
             throw new UserNotFoundException(ERROR_EMPTY_USER_VALUE);
         }
     }
@@ -250,6 +252,22 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             log.info("Фильм по идентификатору {} не найден.", directorId);
             throw new FilmNotFoundException("Фильм не найден");
+        }
+    }
+
+    @Override
+    public List<Film> commonFilms(Integer userId, Integer friendId) {
+        SqlRowSet userRow = jdbcTemplate.queryForRowSet(SQLScripts.GET_USER, userId);
+        SqlRowSet friendRow = jdbcTemplate.queryForRowSet(SQLScripts.GET_USER, friendId);
+        if (userRow.next() && friendRow.next()) {
+            String sqlQuery = SQLScripts.GET_COMMON_FILMS_TWO_USERS;
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, friendId);
+        } else if (!friendRow.next()) {
+            log.info("Друг пользователя с идентификатором {} не найден.", friendId);
+            throw new UserNotFoundException("Друг не найден");
+        } else {
+            log.info(ERROR_USER_ID_NOT_FOUND, userId);
+            throw new UserNotFoundException(ERROR_EMPTY_USER_VALUE);
         }
     }
 

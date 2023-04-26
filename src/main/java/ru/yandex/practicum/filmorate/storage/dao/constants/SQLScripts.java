@@ -146,4 +146,23 @@ public class SQLScripts {
             "WHERE df.DIRECTOR_ID = ?\n" +
             "GROUP BY f.FILM_ID \n" +
             "ORDER BY likes ASC";
+
+    public static final String GET_DIRECTOR_ID_FOR_UPDATE = "select g.DIRECTOR_ID as DIRECTOR_ID ," +
+            " g.NAME as NAME, fc.FILM_ID \n" +
+            "from DIRECTOR g  \n" +
+            "join DIRECTOR_FILMS fc ON g.DIRECTOR_ID  = fc.DIRECTOR_ID \n" +
+            "WHERE fc.FILM_ID = ? \n" +
+            "ORDER BY g.DIRECTOR_ID ASC";
+
+    public static final String GET_COMMON_FILMS_TWO_USERS = "SELECT DISTINCT f.FILM_ID, f.RATING_ID , f.NAME, " +
+            "f.DESCRIPTION , f.RELEASE_DATE , f.DURATION, fr.NAME as R_NAME, COUNT(ulff.USER_ID) \n" +
+            "FROM FILMS f \n" +
+            "JOIN USER_LIKES_FOR_FILMS ulff ON ulff.FILM_ID = f.FILM_ID\n" +
+            "JOIN FILMS_RATINGS fr ON fr.RATING_ID = f.RATING_ID\n" +
+            "WHERE f.FILM_ID = ANY (SELECT DISTINCT ulff.FILM_ID\n" +
+            "FROM USER_LIKES_FOR_FILMS ulff \n" +
+            "JOIN USER_LIKES_FOR_FILMS ulff2 ON ulff.FILM_ID = ulff2.FILM_ID \n" +
+            "WHERE ulff.USER_ID = ? AND ulff2.USER_ID = ?)\n" +
+            "GROUP BY f.FILM_ID\n" +
+            "ORDER BY COUNT(ulff.USER_ID) DESC ";
 }
