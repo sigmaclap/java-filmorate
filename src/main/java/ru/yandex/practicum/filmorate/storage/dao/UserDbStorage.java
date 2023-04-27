@@ -85,7 +85,6 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-
     @Override
     public User update(User user) {
         String sqlQuery = SQLScripts.UPDATE_USER_SET;
@@ -121,6 +120,10 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriendsUser(Integer userId) {
+        if (findUserById(userId) == null) {
+            log.info("Пользователь с идентификатором {} не найден.", userId);
+            throw new UserNotFoundException("Пользователь не найден");
+        }
         String sqlQuery = String.format("SELECT FRIEND_ID FROM USERS_FRIENDS_STATUS ufs WHERE USER_ID = %d", userId);
         List<Integer> idFriends = new ArrayList<>(jdbcTemplate.queryForList(sqlQuery, Integer.class));
         List<User> friendsList = new ArrayList<>();
@@ -156,6 +159,11 @@ public class UserDbStorage implements UserStorage {
             return jdbcTemplate.update(sqlAdd, userId, friendId, true) > 0;
         }
         return jdbcTemplate.update(sqlAdd, userId, friendId, false) > 0;
+    }
+
+    @Override
+    public boolean removeUserById(Integer userId) {
+        return jdbcTemplate.update("DELETE FROM PUBLIC.USERS WHERE USER_ID=?", userId) > 0;
     }
 
     @Override

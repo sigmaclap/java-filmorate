@@ -16,10 +16,6 @@ public class SQLScripts {
             "(RATING_ID, NAME, DESCRIPTION, RELEASE_DATE, DURATION)\n" +
             "VALUES(?, ?, ?, ?, ?)";
 
-    public static final String GET_FILM_WITH_RATING_NAME = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
-            "JOIN FILMS_RATINGS fr ON f.RATING_ID = fr.RATING_ID" +
-            " WHERE f.NAME = ?";
-
     public static final String DELETE_FILMS_CATEGORY = "DELETE FROM FILMS_CATEGORY WHERE FILM_ID = ?";
 
     public static final String INSERT_GENRE_ID = "INSERT INTO FILMS_CATEGORY (film_id, genre_id) VALUES";

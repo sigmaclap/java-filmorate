@@ -53,6 +53,11 @@ public class FilmController {
         return filmService.deleteLike(filmId, userId);
     }
 
+    @DeleteMapping("/{id}")
+    public boolean deleteFilmById(@PathVariable("id") Integer filmId) {
+        return filmService.deleteFilmById(filmId);
+    }
+
     @GetMapping("/search")
     public List<Film> getFilmByTitleOrDirector(@RequestParam(name = "query") String queryName,
                                                @RequestParam(name = "by", required = false) String options) {

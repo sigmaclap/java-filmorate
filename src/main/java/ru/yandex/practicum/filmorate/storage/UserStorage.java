@@ -19,6 +19,8 @@ public interface UserStorage {
 
     boolean removeFriendToUser(Integer userId, Integer friendId, boolean isFriendship);
 
+    boolean removeUserById(Integer userId);
+
     List<User> commonFriends(Integer userId, Integer otherId);
 
 }

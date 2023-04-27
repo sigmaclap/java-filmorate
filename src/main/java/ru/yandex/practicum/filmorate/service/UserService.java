@@ -63,6 +63,10 @@ public class UserService {
         }
     }
 
+    public boolean removeUserById(Integer userId) {
+        return userStorage.removeUserById(userId);
+    }
+
     public List<User> commonFriends(Integer userId, Integer otherId) {
         return userStorage.commonFriends(userId, otherId);
     }
