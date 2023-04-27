@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -28,11 +30,31 @@ public class ReviewService {
         return reviewStorage.deleteReview(reviewId);
     }
 
+    public List<Review> getAllReviews() {
+        return reviewStorage.getAllReviews();
+    }
+
     public Review getReviewById(Integer reviewId) {
         return reviewStorage.getReviewById(reviewId);
     }
 
     public List<Review> getReviewsByFilmId(Integer filmId, Integer count) {
         return reviewStorage.getReviewsByFilmId(filmId, count);
+    }
+
+    public Review addLike(Integer reviewId, Integer userId) {
+        return reviewStorage.addLike(reviewId, userId);
+    }
+
+    public Review addDislike (Integer reviewId, Integer userId) {
+        return reviewStorage.addDislike(reviewId, userId);
+    }
+
+    public Review deleteLike(Integer reviewId, Integer userId) {
+        return reviewStorage.deleteLike(reviewId, userId);
+    }
+
+    public Review deleteDislike(Integer reviewId, Integer userId) {
+        return reviewStorage.deleteDislike(reviewId, userId);
     }
 }
