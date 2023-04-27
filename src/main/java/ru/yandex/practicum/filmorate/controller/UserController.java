@@ -4,6 +4,7 @@ import jdk.jfr.Description;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -58,14 +59,14 @@ public class UserController {
         return userService.removeFriendToUser(userId, friendId);
     }
 
-    @DeleteMapping("/{id}")
-    public boolean removeUser(@PathVariable("id") Integer userId) {
-        return userService.removeUserById(userId);
-    }
-
     @GetMapping("/{id}/friends/common/{otherId}")
     @Description("Отображение общего списка друзей пользователей")
     public List<User> commonFriends(@PathVariable("id") Integer userId, @PathVariable("otherId") Integer otherId) {
         return userService.commonFriends(userId, otherId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getFilmsRecommended(@PathVariable("id") Integer id) {
+        return userService.getFilmRecommended(id);
     }
 }
