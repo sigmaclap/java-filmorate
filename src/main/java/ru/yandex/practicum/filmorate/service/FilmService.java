@@ -51,6 +51,10 @@ public class FilmService {
         return filmStorage.deleteLike(filmId, userId);
     }
 
+    public boolean deleteFilmById(Integer filmId) {
+        return filmStorage.deleteFilm(filmId);
+    }
+
     public List<Genre> getGenres() {
         return genreStorage.getGenresList();
     }

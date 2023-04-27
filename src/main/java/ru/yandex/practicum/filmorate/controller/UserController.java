@@ -58,6 +58,11 @@ public class UserController {
         return userService.removeFriendToUser(userId, friendId);
     }
 
+    @DeleteMapping("/{id}")
+    public boolean removeUser(@PathVariable("id") Integer userId) {
+        return userService.removeUserById(userId);
+    }
+
     @GetMapping("/{id}/friends/common/{otherId}")
     @Description("Отображение общего списка друзей пользователей")
     public List<User> commonFriends(@PathVariable("id") Integer userId, @PathVariable("otherId") Integer otherId) {
