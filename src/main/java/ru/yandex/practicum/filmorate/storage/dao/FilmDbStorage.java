@@ -90,6 +90,12 @@ public class FilmDbStorage implements FilmStorage {
         int idFilm = Objects.requireNonNull(keyHolder.getKey()).intValue();
         updateFilmGenres(film, idFilm);
         updateDirectors(film, idFilm);
+        SqlRowSet filmRow = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_WITH_RATING_ID, idFilm);
+        if (filmRow.next()) {
+            film.setMpa(Mpa.builder().id(filmRow.getInt(RATING_ID_COLUMN))
+                    .name(filmRow.getString(RATING_NAME_COLUMN))
+                    .build());
+        }
         film.setId(idFilm);
         return film;
     }

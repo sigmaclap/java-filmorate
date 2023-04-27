@@ -27,6 +27,9 @@ public class SQLScripts {
             "WHERE fc.FILM_ID = ? \n" +
             "ORDER BY g.GENRE_ID ASC";
 
+    public static final String GET_FILM_WITH_RATING_ID = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID = fr.RATING_ID" +
+            " WHERE f.FILM_ID = ?";
     public static final String UPDATE_FILM_SET = "UPDATE PUBLIC.FILMS SET RATING_ID=?, " +
             "NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=? WHERE FILM_ID=?";
 
