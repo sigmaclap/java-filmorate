@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.storage.dao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
@@ -15,6 +17,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -73,32 +76,55 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+//    public Film create(Film film) {
+//        String sqlQuery = SQLScripts.ADD_NEW_FILM;
+//        jdbcTemplate.update(sqlQuery, film.getMpa().getId(), film.getName(),
+//                film.getDescription(), film.getReleaseDate(), film.getDuration());
+//        SqlRowSet filmRow = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_WITH_RATING_NAME, film.getName());
+//        if (filmRow.next()) {
+//            int idFilm = filmRow.getInt(FILM_ID_COLUMN);
+//            film.setId(idFilm);
+//            updateFilmGenres(film, idFilm);
+//            updateDirectors(film, idFilm);
+//            return Film.builder()
+//                    .id(filmRow.getInt(FILM_ID_COLUMN))
+//                    .name(filmRow.getString(NAME_COLUMN))
+//                    .description(filmRow.getString(DESCRIPTION_COLUMN))
+//                    .releaseDate(Objects.requireNonNull(filmRow.getDate(RELEASE_DATE_COLUMN).toLocalDate()))
+//                    .duration(filmRow.getInt(DURATION_COLUMN))
+//                    .mpa(Mpa.builder().id(filmRow.getInt(RATING_ID_COLUMN))
+//                            .name(filmRow.getString(RATING_NAME_COLUMN))
+//                            .build())
+//                    .genres(film.getGenres())
+//                    .directors(film.getDirectors())
+//                    .build();
+//        } else {
+//            log.info("Фильм с именем {} не найден.", film.getName());
+//            throw new FilmNotFoundException(ERROR_EMPTY_FILM_VALUE);
+//        }
+//    }
     public Film create(Film film) {
-        String sqlQuery = SQLScripts.ADD_NEW_FILM;
-        jdbcTemplate.update(sqlQuery, film.getMpa().getId(), film.getName(),
-                film.getDescription(), film.getReleaseDate(), film.getDuration());
-        SqlRowSet filmRow = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_WITH_RATING_NAME, film.getName());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(SQLScripts.ADD_NEW_FILM, new String[]{FILM_ID_COLUMN});
+            ps.setInt(1, film.getMpa().getId());
+            ps.setString(2, film.getName());
+            ps.setString(3, film.getDescription());
+            ps.setDate(4, Date.valueOf(film.getReleaseDate()));
+            ps.setLong(5, film.getDuration());
+            return ps;
+        }, keyHolder);
+        int idFilm = Objects.requireNonNull(keyHolder.getKey()).intValue();
+        updateFilmGenres(film, idFilm);
+        updateDirectors(film, idFilm);
+        SqlRowSet filmRow = jdbcTemplate.queryForRowSet(SQLScripts.GET_FILM_WITH_RATING_ID, idFilm);
         if (filmRow.next()) {
-            int idFilm = filmRow.getInt(FILM_ID_COLUMN);
-            film.setId(idFilm);
-            updateFilmGenres(film, idFilm);
-            updateDirectors(film, idFilm);
-            return Film.builder()
-                    .id(filmRow.getInt(FILM_ID_COLUMN))
-                    .name(filmRow.getString(NAME_COLUMN))
-                    .description(filmRow.getString(DESCRIPTION_COLUMN))
-                    .releaseDate(Objects.requireNonNull(filmRow.getDate(RELEASE_DATE_COLUMN).toLocalDate()))
-                    .duration(filmRow.getInt(DURATION_COLUMN))
-                    .mpa(Mpa.builder().id(filmRow.getInt(RATING_ID_COLUMN))
-                            .name(filmRow.getString(RATING_NAME_COLUMN))
-                            .build())
-                    .genres(film.getGenres())
-                    .directors(film.getDirectors())
-                    .build();
-        } else {
-            log.info("Фильм с именем {} не найден.", film.getName());
-            throw new FilmNotFoundException(ERROR_EMPTY_FILM_VALUE);
+            film.setMpa(Mpa.builder().id(filmRow.getInt(RATING_ID_COLUMN))
+                    .name(filmRow.getString(RATING_NAME_COLUMN))
+                    .build());
         }
+        film.setId(idFilm);
+        return film;
     }
 
     private void updateFilmGenres(Film film, Integer filmId) {
@@ -179,16 +205,20 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
         if (genreId == 0 && year == 0) {
             String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_YEAR;
-            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count).stream().distinct().collect(Collectors.toList());
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count).stream()
+                    .distinct().collect(Collectors.toList());
         } else if (genreId == 0) {
             String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_WITH_YEAR;
-            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count).stream().distinct().collect(Collectors.toList());
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count).stream()
+                    .distinct().collect(Collectors.toList());
         } else if (year == 0) {
             String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_WITHOUT_YEAR;
-            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count).stream().distinct().collect(Collectors.toList());
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count).stream()
+                    .distinct().collect(Collectors.toList());
         } else {
             String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_YEAR;
-            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count).stream().distinct().collect(Collectors.toList());
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count).stream()
+                    .distinct().collect(Collectors.toList());
         }
     }
 

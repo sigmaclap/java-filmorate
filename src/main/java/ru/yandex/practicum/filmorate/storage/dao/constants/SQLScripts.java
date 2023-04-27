@@ -16,9 +16,9 @@ public class SQLScripts {
             "(RATING_ID, NAME, DESCRIPTION, RELEASE_DATE, DURATION)\n" +
             "VALUES(?, ?, ?, ?, ?)";
 
-    public static final String GET_FILM_WITH_RATING_NAME = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
+    public static final String GET_FILM_WITH_RATING_ID = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
             "JOIN FILMS_RATINGS fr ON f.RATING_ID = fr.RATING_ID" +
-            " WHERE f.NAME = ?";
+            " WHERE f.FILM_ID = ?";
 
     public static final String DELETE_FILMS_CATEGORY = "DELETE FROM FILMS_CATEGORY WHERE FILM_ID = ?";
 
@@ -37,7 +37,8 @@ public class SQLScripts {
     public static final String GET_FILM_WITH_FILM_ID = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
             "JOIN FILMS_RATINGS fr ON fr.RATING_ID = f.RATING_ID WHERE f.FILM_ID = ?";
 
-    public static final String GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
+    public static final String GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_YEAR = "SELECT f.FILM_ID , " +
+            "f.NAME , f.DESCRIPTION ," +
             " f.RELEASE_DATE, f.DURATION , fr.RATING_ID , fr.NAME as R_NAME ," +
             " g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
             "FROM FILMS f \n" +
@@ -49,7 +50,8 @@ public class SQLScripts {
             "ORDER BY COUNT(ulff.FILM_ID) DESC \n" +
             "LIMIT ?";
 
-    public static final String GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
+    public static final String GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_YEAR = "SELECT f.FILM_ID , " +
+            "f.NAME , f.DESCRIPTION ," +
             " f.RELEASE_DATE, f.DURATION , fr.RATING_ID , fr.NAME as R_NAME ," +
             " g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
             "FROM FILMS f \n" +
@@ -62,7 +64,8 @@ public class SQLScripts {
             "ORDER BY COUNT(ulff.FILM_ID) DESC \n" +
             "LIMIT ?";
 
-    public static final String GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_WITHOUT_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
+    public static final String GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_WITHOUT_YEAR = "SELECT f.FILM_ID , " +
+            "f.NAME , f.DESCRIPTION ," +
             " f.RELEASE_DATE, f.DURATION , fr.RATING_ID , fr.NAME as R_NAME ," +
             " g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
             "FROM FILMS f \n" +
@@ -75,7 +78,8 @@ public class SQLScripts {
             "ORDER BY COUNT(ulff.FILM_ID) DESC \n" +
             "LIMIT ?";
 
-    public static final String GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_WITH_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ," +
+    public static final String GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_WITH_YEAR = "SELECT f.FILM_ID , " +
+            "f.NAME , f.DESCRIPTION ," +
             " f.RELEASE_DATE, f.DURATION , fr.RATING_ID , fr.NAME as R_NAME ," +
             " g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
             "FROM FILMS f \n" +
@@ -109,7 +113,8 @@ public class SQLScripts {
             "SET EMAIL=?, LOGIN=?, NAME=?, BIRTHDAY=?\n" +
             "WHERE USER_ID= ?";
 
-    public static final String GET_COMMON_FRIENDS_USER = "SELECT u.USER_ID , u.EMAIL , u.LOGIN , u.NAME , u.BIRTHDAY ," +
+    public static final String GET_COMMON_FRIENDS_USER = "SELECT u.USER_ID , u.EMAIL , u.LOGIN , " +
+            "u.NAME , u.BIRTHDAY ," +
             " ufs3.FRIEND_ID " +
             ", ufs3.FRIENDSHIP_STATUS \n" +
             "FROM USERS u JOIN USERS_FRIENDS_STATUS ufs ON u.USER_ID = ufs.FRIEND_ID " +
@@ -141,7 +146,8 @@ public class SQLScripts {
             "WHERE LOWER(f.NAME) LIKE '%' || (?) || '%' GROUP BY f.FILM_ID, g.GENRE_ID\n" +
             "ORDER BY COUNT(ulff.FILM_ID) DESC";
 
-    public static final String GET_LIKE_DIRECTOR_PROPERTY = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ,f.RELEASE_DATE, f.DURATION , " +
+    public static final String GET_LIKE_DIRECTOR_PROPERTY = "SELECT f.FILM_ID , f.NAME , " +
+            "f.DESCRIPTION ,f.RELEASE_DATE, f.DURATION , " +
             "fr.RATING_ID , fr.NAME as R_NAME, COUNT(ulff.FILM_ID) FROM FILMS f \n" +
             "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
             "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
@@ -150,7 +156,8 @@ public class SQLScripts {
             "WHERE LOWER(d.NAME) LIKE '%' || (?) || '%' GROUP BY f.FILM_ID \n" +
             "ORDER BY COUNT(ulff.FILM_ID) DESC";
 
-    public static final String GET_LIKE_TITLE_AND_DIRECTOR_PROPERTY = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION ,f.RELEASE_DATE, f.DURATION , " +
+    public static final String GET_LIKE_TITLE_AND_DIRECTOR_PROPERTY = "SELECT f.FILM_ID , f.NAME , " +
+            "f.DESCRIPTION ,f.RELEASE_DATE, f.DURATION , " +
             "fr.RATING_ID , fr.NAME as R_NAME , g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.FILM_ID) \n" +
             "FROM FILMS f LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
             "JOIN FILMS_RATINGS fr ON f.RATING_ID  = fr.RATING_ID \n" +
@@ -162,7 +169,8 @@ public class SQLScripts {
             "GROUP BY f.FILM_ID, g.GENRE_ID \n" +
             "ORDER BY COUNT(ulff.FILM_ID) DESC";
 
-    public static final String GET_LIST_DIRECTOR_BY_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION , f.RELEASE_DATE, f.DURATION , fr.RATING_ID , " +
+    public static final String GET_LIST_DIRECTOR_BY_YEAR = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION , " +
+            "f.RELEASE_DATE, f.DURATION , fr.RATING_ID , " +
             "fr.NAME as R_NAME , g.GENRE_ID , g.NAME AS G_NAME , YEAR(f.RELEASE_DATE) AS years \n" +
             "FROM FILMS f \n" +
             "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
@@ -174,7 +182,8 @@ public class SQLScripts {
             "GROUP BY f.FILM_ID \n" +
             "ORDER BY years ASC";
 
-    public static final String GET_LIST_DIRECTOR_BY_LIKE = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION , f.RELEASE_DATE, f.DURATION , fr.RATING_ID , " +
+    public static final String GET_LIST_DIRECTOR_BY_LIKE = "SELECT f.FILM_ID , f.NAME , f.DESCRIPTION , " +
+            "f.RELEASE_DATE, f.DURATION , fr.RATING_ID , " +
             "fr.NAME as R_NAME , g.GENRE_ID , g.NAME AS G_NAME , COUNT(ulff.USER_ID) AS likes \n" +
             "FROM FILMS f \n" +
             "LEFT JOIN USER_LIKES_FOR_FILMS ulff ON f.FILM_ID = ulff.FILM_ID \n" +
@@ -204,4 +213,13 @@ public class SQLScripts {
             "WHERE ulff.USER_ID = ? AND ulff2.USER_ID = ?)\n" +
             "GROUP BY f.FILM_ID\n" +
             "ORDER BY COUNT(ulff.USER_ID) DESC ";
+
+    public static final String GET_RECOMMENDATION_USERS = "SELECT ulff.FILM_ID  \n" +
+            "FROM USER_LIKES_FOR_FILMS ulff \n" +
+            "WHERE ulff.USER_ID = \n" +
+            "(SELECT ulf.USER_ID  \n" +
+            "FROM USER_LIKES_FOR_FILMS ulf \n" +
+            "WHERE ulf.USER_ID != ? AND ulf.FILM_ID IN " +
+            "(SELECT ul.FILM_ID  FROM USER_LIKES_FOR_FILMS ul WHERE ul.USER_ID = ?)\n" +
+            "GROUP BY ulf.USER_ID)";
 }
