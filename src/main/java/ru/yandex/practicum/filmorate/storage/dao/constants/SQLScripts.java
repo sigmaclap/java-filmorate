@@ -16,7 +16,7 @@ public class SQLScripts {
             "(RATING_ID, NAME, DESCRIPTION, RELEASE_DATE, DURATION)\n" +
             "VALUES(?, ?, ?, ?, ?)";
 
-    public static final String GET_FILM_WITH_RATING_ID = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
+    public static final String GET_FILM_WITH_RATING_NAME = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
             "JOIN FILMS_RATINGS fr ON f.RATING_ID = fr.RATING_ID" +
             " WHERE f.NAME = ?";
 
