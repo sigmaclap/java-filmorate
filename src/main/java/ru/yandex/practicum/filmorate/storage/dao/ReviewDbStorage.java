@@ -17,8 +17,8 @@ import java.util.*;
 @Repository
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
-    private static String USEFUL = "SUM(CASE WHEN rl.review_like IS TRUE THEN 1 WHEN rl.review_like IS FALSE THEN -1 ELSE 0 END)";
-    private static String ALL = "SELECT r.review_id, r.content, r.is_positive, r.film_id, r.user_id, " + USEFUL +
+    private static final String USEFUL = "SUM(CASE WHEN rl.review_like IS TRUE THEN 1 WHEN rl.review_like IS FALSE THEN -1 ELSE 0 END)";
+    private static final String ALL = "SELECT r.review_id, r.content, r.is_positive, r.film_id, r.user_id, " + USEFUL +
             " AS useful FROM REVIEW r LEFT JOIN REVIEW_LIKES rl ON r.review_id = rl.review_id";
     private final JdbcTemplate jdbcTemplate;
 
