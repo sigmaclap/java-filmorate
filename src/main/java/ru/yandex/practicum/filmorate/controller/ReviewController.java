@@ -7,9 +7,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @Slf4j
