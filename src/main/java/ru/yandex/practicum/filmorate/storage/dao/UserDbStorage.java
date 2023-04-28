@@ -7,7 +7,9 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.InvalidDataException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts;
 
@@ -16,6 +18,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -30,11 +33,16 @@ public class UserDbStorage implements UserStorage {
     private static final String FRIENDSHIP_STATUS_COLUMN = "FRIENDSHIP_STATUS";
     private static final String ERROR_USER_NOT_FOUND = "Пользователь не найден";
 
+    private static final String GET_FILMS_BY_USER_ID = "SELECT FILM_ID FROM USER_LIKES_FOR_FILMS WHERE USER_ID = ?";
+
     private final JdbcTemplate jdbcTemplate;
 
+    private final FilmStorage filmStorage;
+
     @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
+    public UserDbStorage(JdbcTemplate jdbcTemplate, FilmStorage filmStorage) {
         this.jdbcTemplate = jdbcTemplate;
+        this.filmStorage = filmStorage;
     }
 
     @Override
@@ -85,7 +93,6 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-
     @Override
     public User update(User user) {
         String sqlQuery = SQLScripts.UPDATE_USER_SET;
@@ -121,6 +128,10 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriendsUser(Integer userId) {
+        if (findUserById(userId) == null) {
+            log.info("Пользователь с идентификатором {} не найден.", userId);
+            throw new UserNotFoundException("Пользователь не найден");
+        }
         String sqlQuery = String.format("SELECT FRIEND_ID FROM USERS_FRIENDS_STATUS ufs WHERE USER_ID = %d", userId);
         List<Integer> idFriends = new ArrayList<>(jdbcTemplate.queryForList(sqlQuery, Integer.class));
         List<User> friendsList = new ArrayList<>();
@@ -159,6 +170,11 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public boolean removeUserById(Integer userId) {
+        return jdbcTemplate.update("DELETE FROM PUBLIC.USERS WHERE USER_ID=?", userId) > 0;
+    }
+
+    @Override
     public boolean removeFriendToUser(Integer userId, Integer friendId, boolean isFriendship) {
         String sqlDelete = SQLScripts.DELETE_FRIEND_ON_USER;
         if (isFriendship) {
@@ -166,5 +182,16 @@ public class UserDbStorage implements UserStorage {
             return jdbcTemplate.update(sql, friendId, userId, false) > 0;
         }
         return jdbcTemplate.update(sqlDelete, userId, friendId) > 0;
+    }
+
+    @Override
+    public List<Film> getFilmRecommended(Integer userId) {
+        List<Integer> filmsByUserId = jdbcTemplate.queryForList(GET_FILMS_BY_USER_ID, Integer.class, userId);
+        List<Integer> listRecommendationsFilms = jdbcTemplate.queryForList(SQLScripts.GET_RECOMMENDATION_USERS,
+                Integer.class, userId, userId);
+        listRecommendationsFilms.removeAll(filmsByUserId);
+        return listRecommendationsFilms.stream()
+                .map(filmStorage::findFilmById)
+                .collect(Collectors.toList());
     }
 }

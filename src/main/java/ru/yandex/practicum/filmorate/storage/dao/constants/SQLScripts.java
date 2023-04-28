@@ -16,10 +16,6 @@ public class SQLScripts {
             "(RATING_ID, NAME, DESCRIPTION, RELEASE_DATE, DURATION)\n" +
             "VALUES(?, ?, ?, ?, ?)";
 
-    public static final String GET_FILM_WITH_RATING_NAME = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
-            "JOIN FILMS_RATINGS fr ON f.RATING_ID = fr.RATING_ID" +
-            " WHERE f.NAME = ?";
-
     public static final String DELETE_FILMS_CATEGORY = "DELETE FROM FILMS_CATEGORY WHERE FILM_ID = ?";
 
     public static final String INSERT_GENRE_ID = "INSERT INTO FILMS_CATEGORY (film_id, genre_id) VALUES";
@@ -31,6 +27,9 @@ public class SQLScripts {
             "WHERE fc.FILM_ID = ? \n" +
             "ORDER BY g.GENRE_ID ASC";
 
+    public static final String GET_FILM_WITH_RATING_ID = "SELECT *, fr.NAME as R_NAME FROM FILMS f " +
+            "JOIN FILMS_RATINGS fr ON f.RATING_ID = fr.RATING_ID" +
+            " WHERE f.FILM_ID = ?";
     public static final String UPDATE_FILM_SET = "UPDATE PUBLIC.FILMS SET RATING_ID=?, " +
             "NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=? WHERE FILM_ID=?";
 
@@ -204,4 +203,13 @@ public class SQLScripts {
             "WHERE ulff.USER_ID = ? AND ulff2.USER_ID = ?)\n" +
             "GROUP BY f.FILM_ID\n" +
             "ORDER BY COUNT(ulff.USER_ID) DESC ";
+
+    public static final String GET_RECOMMENDATION_USERS = "SELECT ulff.FILM_ID  \n" +
+            "FROM USER_LIKES_FOR_FILMS ulff \n" +
+            "WHERE ulff.USER_ID = \n" +
+            "(SELECT ulf.USER_ID  \n" +
+            "FROM USER_LIKES_FOR_FILMS ulf \n" +
+            "WHERE ulf.USER_ID != ? AND ulf.FILM_ID IN " +
+            "(SELECT ul.FILM_ID  FROM USER_LIKES_FOR_FILMS ul WHERE ul.USER_ID = ?)\n" +
+            "GROUP BY ulf.USER_ID)";
 }
