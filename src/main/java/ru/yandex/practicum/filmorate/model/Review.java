@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -11,8 +12,10 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class Review {
     private int reviewId;
+    @NotBlank
     private String content;
-    private boolean isPositive;
+    @NotNull
+    private Boolean isPositive;
     @NotNull
     private int userId;
     @NotNull
