@@ -40,19 +40,19 @@ public class ReviewService {
         return reviewStorage.getReviewsByFilmId(filmId, count);
     }
 
-    public Review addLike(Integer reviewId, Integer userId) {
+    public boolean addLike(Integer reviewId, Integer userId) {
         return reviewStorage.addLike(reviewId, userId);
     }
 
-    public Review addDislike(Integer reviewId, Integer userId) {
+    public boolean addDislike(Integer reviewId, Integer userId) {
         return reviewStorage.addDislike(reviewId, userId);
     }
 
-    public Review deleteLike(Integer reviewId, Integer userId) {
+    public boolean deleteLike(Integer reviewId, Integer userId) {
         return reviewStorage.deleteLike(reviewId, userId);
     }
 
-    public Review deleteDislike(Integer reviewId, Integer userId) {
+    public boolean deleteDislike(Integer reviewId, Integer userId) {
         return reviewStorage.deleteDislike(reviewId, userId);
     }
 }

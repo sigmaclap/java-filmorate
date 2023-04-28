@@ -4,22 +4,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Objects;
 
-@Repository
+import static ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts.ALL_REVIEWS;
+import static ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts.USEFUL;
+
+@Component
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
-    private static final String USEFUL = "SUM(CASE WHEN rl.review_like IS TRUE THEN 1 WHEN rl.review_like IS FALSE THEN -1 ELSE 0 END)";
-    private static final String ALL = "SELECT r.review_id, r.content, r.is_positive, r.film_id, r.user_id, " + USEFUL +
-            " AS useful FROM REVIEW r LEFT JOIN REVIEW_LIKES rl ON r.review_id = rl.review_id";
     private final JdbcTemplate jdbcTemplate;
 
     public ReviewDbStorage(JdbcTemplate jdbcTemplate) {
@@ -28,14 +29,18 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review createReview(Review review) {
-        String sql = "INSERT INTO review(content, is_positive, film_id, user_id) VALUES (?, ?, ?, ?)";
+        if (review.getUserId() < 0 || review.getFilmId() < 0) {
+            log.info("Отзыв не создан, отрицательные значения.");
+            throw new ReviewNotFoundException("Отзыв не создан, отрицательные значения.");
+        }
+        String sql = "INSERT INTO REVIEW (content, is_positive, film_id, user_id) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement(sql, new String[]{"review_id"});
             statement.setString(1, review.getContent());
             statement.setBoolean(2, review.getIsPositive());
-            statement.setLong(3, review.getUserId());
-            statement.setLong(4, review.getFilmId());
+            statement.setLong(3, review.getFilmId());
+            statement.setLong(4, review.getUserId());
             return statement;
         }, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
@@ -55,70 +60,99 @@ public class ReviewDbStorage implements ReviewStorage {
         return jdbcTemplate.update(sql, reviewId) > 0;
     }
 
+
     @Override
     public List<Review> getAllReviews() {
-        SqlRowSet srs = jdbcTemplate.queryForRowSet(ALL + " GROUP BY r.review_id ORDER BY useful DESC");
-        List<Review> reviews = new ArrayList<>();
-        while (srs.next()) {
-            Review review = getReviewFromSql(srs);
-            reviews.add(review);
-        }
-        return reviews;
+        String sqlQuery = "SELECT r.review_id , r.content , r.is_positive , r.film_id , r.user_id , " + USEFUL +
+                " FROM REVIEW r " +
+                "LEFT JOIN REVIEW_LIKES rl ON rl.review_id = r.review_id " +
+                "GROUP BY r.review_id ORDER BY USEFUL DESC";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToReview);
     }
 
     @Override
     public Review getReviewById(Integer reviewId) {
-        SqlRowSet srs = jdbcTemplate.queryForRowSet(ALL + " WHERE r.review_id = ? GROUP BY r.review_id", reviewId);
-        if (srs.next())
-            return getReviewFromSql(srs);
-        else
+        String srs = (ALL_REVIEWS + " WHERE r.review_id = ? GROUP BY r.review_id");
+        List<Review> listReview = getAllReviews();
+        boolean isReviewExist = listReview.stream().noneMatch(review -> review.getReviewId().equals(reviewId));
+        if (isReviewExist) {
+            log.info("Отзыв с идентификатором {} не найден.", reviewId);
             throw new ReviewNotFoundException("Отзыв не найден");
+        }
+        return jdbcTemplate.queryForObject(srs, this::mapRowToReview, reviewId);
     }
 
     @Override
     public List<Review> getReviewsByFilmId(Integer filmId, Integer count) {
-        SqlRowSet srs = jdbcTemplate.queryForRowSet(ALL +
-                " WHERE r.film_id = ? GROUP BY r.review_id ORDER BY useful DESC LIMIT ?", filmId, count);
-        List<Review> reviews = new ArrayList<>();
-        while (srs.next()) {
-            Review review = getReviewFromSql(srs);
-            reviews.add(review);
+        String srs = ALL_REVIEWS +
+                " WHERE r.FILM_ID = ? " +
+                "GROUP BY r.REVIEW_ID " +
+                "ORDER BY USEFUL DESC LIMIT ?";
+        if (filmId == null) {
+            return getAllReviews();
         }
-        return reviews;
+        return jdbcTemplate.query(srs, this::mapRowToReview, filmId, count);
     }
 
     @Override
-    public Review addLike(Integer reviewId, Integer userId) {
-        return null;
+    public boolean addLike(Integer reviewId, Integer userId) {
+        String sqlQuery = "INSERT INTO PUBLIC.REVIEW_LIKES(REVIEW_ID, USER_ID, REVIEW_LIKE)\n" +
+                "VALUES(?, ?, true)";
+        if (jdbcTemplate.update(sqlQuery, reviewId, userId) > 0) {
+            log.info("Лайк от пользователя {} на отзыв {} успешно добавлен", userId, reviewId);
+            return true;
+        } else {
+            log.info("Лайк на отзыв не добавлен");
+            throw new ReviewNotFoundException("Лайк не добавлен");
+        }
     }
 
     @Override
-    public Review addDislike(Integer reviewId, Integer userId) {
-        return null;
+    public boolean addDislike(Integer reviewId, Integer userId) {
+        String sqlQuery = "INSERT INTO PUBLIC.REVIEW_LIKES(REVIEW_ID, USER_ID, REVIEW_LIKE) " +
+                "VALUES(?, ?, false)";
+        if (jdbcTemplate.update(sqlQuery, reviewId, userId) > 0) {
+            log.info("Дизлайк от пользователя {} на отзыв {} успешно добавлен", userId, reviewId);
+            return true;
+        } else {
+            log.info("Дизлайк на отзыв не добавлен");
+            throw new ReviewNotFoundException("Дизлайк не добавлен");
+        }
     }
 
     @Override
-    public Review deleteLike(Integer reviewId, Integer userId) {
-        String sql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ? AND review IS TRUE";
-        jdbcTemplate.update(sql, reviewId, userId);
-        return getReviewById(reviewId);
+    public boolean deleteLike(Integer reviewId, Integer userId) {
+        String sql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ? AND review_like IS TRUE";
+        if (jdbcTemplate.update(sql, reviewId, userId) > 0) {
+            log.info("Лайк от пользователя {} на отзыв {} успешно удален", userId, reviewId);
+            return true;
+        } else {
+            log.info("Лайк на отзыв не удален");
+            throw new ReviewNotFoundException("Лайк не удален");
+        }
+
     }
 
     @Override
-    public Review deleteDislike(Integer reviewId, Integer userId) {
+    public boolean deleteDislike(Integer reviewId, Integer userId) {
         String sql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ? AND review_like IS FALSE ";
-        jdbcTemplate.update(sql, reviewId, userId);
-        return getReviewById(reviewId);
+        if (jdbcTemplate.update(sql, reviewId, userId) > 0) {
+            log.info("Дизлайк от пользователя {} на отзыв {} успешно удален", userId, reviewId);
+            return true;
+        } else {
+            log.info("Дизлайк на отзыв не удален");
+            throw new ReviewNotFoundException("Дизлайк не удален");
+        }
     }
 
-    private Review getReviewFromSql(SqlRowSet sqlRowSet) {
+    private Review mapRowToReview(ResultSet rs, int rowNum) throws SQLException {
         return Review.builder()
-                .reviewId(sqlRowSet.getInt("review_id"))
-                .content(sqlRowSet.getString("content"))
-                .isPositive(sqlRowSet.getBoolean("is_positive"))
-                .filmId(sqlRowSet.getInt("film_id"))
-                .userId(sqlRowSet.getInt("user_id"))
-                .useful(sqlRowSet.getInt("useful"))
+                .reviewId(rs.getInt("review_id"))
+                .content(rs.getString("content"))
+                .isPositive(rs.getBoolean("is_positive"))
+                .filmId(rs.getInt("film_id"))
+                .userId(rs.getInt("user_id"))
+                .useful(rs.getInt("useful"))
                 .build();
     }
 }

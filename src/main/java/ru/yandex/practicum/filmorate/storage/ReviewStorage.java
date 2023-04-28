@@ -17,11 +17,11 @@ public interface ReviewStorage {
 
     List<Review> getAllReviews();
 
-    Review addLike(Integer reviewId, Integer userId);
+    boolean addLike(Integer reviewId, Integer userId);
 
-    Review addDislike(Integer reviewId, Integer userId);
+    boolean addDislike(Integer reviewId, Integer userId);
 
-    Review deleteLike(Integer reviewId, Integer userId);
+    boolean deleteLike(Integer reviewId, Integer userId);
 
-    Review deleteDislike(Integer reviewId, Integer userId);
+    boolean deleteDislike(Integer reviewId, Integer userId);
 }

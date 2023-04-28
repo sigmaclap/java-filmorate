@@ -65,7 +65,7 @@ create TABLE IF NOT EXISTS director_films (
 );
 
 create table IF NOT EXISTS review (
-    review_id int NOT NULL PRIMARY KEY,
+    review_id serial NOT NULL PRIMARY KEY,
     content varchar(255) NOT NULL,
     is_positive boolean,
     film_id int NOT NULL REFERENCES films(film_id) ON delete CASCADE,

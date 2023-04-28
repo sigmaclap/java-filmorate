@@ -41,30 +41,28 @@ public class ReviewController {
     }
 
     @GetMapping()
-    public List<Review> getReviewsByFilmId(@RequestParam(defaultValue = "0") Integer filmId,
+    public List<Review> getReviewsByFilmId(@RequestParam(required = false) Integer filmId,
                                            @RequestParam(defaultValue = "10") Integer count) {
-        if (filmId == 0)
-            return reviewService.getAllReviews();
         return reviewService.getReviewsByFilmId(filmId, count);
     }
 
     @PutMapping(value = "/{id}/like/{userId}")
-    public Review addLike(@PathVariable("id") Integer reviewId, @PathVariable Integer userId) {
+    public boolean addLike(@PathVariable("id") Integer reviewId, @PathVariable Integer userId) {
         return reviewService.addLike(reviewId, userId);
     }
 
     @PutMapping(value = "/{id}/dislike/{userId}")
-    public Review addDislike(@PathVariable("id") Integer reviewId, @PathVariable Integer userId) {
+    public boolean addDislike(@PathVariable("id") Integer reviewId, @PathVariable Integer userId) {
         return reviewService.addDislike(reviewId, userId);
     }
 
     @DeleteMapping(value = "/{id}/like/{userId}")
-    public Review deleteLike(@PathVariable("id") Integer reviewId, @PathVariable Integer userId) {
+    public boolean deleteLike(@PathVariable("id") Integer reviewId, @PathVariable Integer userId) {
         return reviewService.deleteLike(reviewId, userId);
     }
 
     @DeleteMapping(value = "/{id}/dislike/{userId}")
-    public Review deleteDislike(@PathVariable("id") Integer reviewId, @PathVariable Integer userId) {
+    public boolean deleteDislike(@PathVariable("id") Integer reviewId, @PathVariable Integer userId) {
         return reviewService.deleteDislike(reviewId, userId);
     }
 }

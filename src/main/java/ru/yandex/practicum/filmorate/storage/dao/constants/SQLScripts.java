@@ -212,4 +212,9 @@ public class SQLScripts {
             "WHERE ulf.USER_ID != ? AND ulf.FILM_ID IN " +
             "(SELECT ul.FILM_ID  FROM USER_LIKES_FOR_FILMS ul WHERE ul.USER_ID = ?)\n" +
             "GROUP BY ulf.USER_ID)";
+
+    public static final String USEFUL = "SUM(CASE rl.review_like WHEN TRUE THEN +1 " +
+            "WHEN FALSE THEN -1 ELSE 0 END) AS USEFUL";
+    public static final String ALL_REVIEWS = "SELECT r.review_id , r.CONTENT , r.is_positive , r.film_id , r.user_id , " +
+            USEFUL + " FROM REVIEW r LEFT JOIN REVIEW_LIKES rl ON r.review_id = rl.review_id";
 }
