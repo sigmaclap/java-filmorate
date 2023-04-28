@@ -7,6 +7,8 @@ drop table IF EXISTS users_friends_status CASCADE;
 drop table IF EXISTS user_likes_for_films CASCADE;
 drop table IF EXISTS director CASCADE;
 drop table IF EXISTS director_films CASCADE;
+drop table IF EXISTS review CASCADE;
+drop table IF EXISTS review_likes CASCADE;
 
 
 create TABLE IF NOT EXISTS films_ratings (
@@ -53,7 +55,7 @@ create TABLE IF NOT EXISTS user_likes_for_films(
 );
 
 create TABLE IF NOT EXISTS director (
-	director_id serial NOT NULL PRIMARY KEY ,
+	director_id serial NOT NULL PRIMARY KEY,
 	name varchar(255) NOT NULL UNIQUE
 );
 
@@ -62,3 +64,17 @@ create TABLE IF NOT EXISTS director_films (
 	director_id int NOT NULL REFERENCES director(director_id) ON delete CASCADE
 );
 
+create table IF NOT EXISTS review (
+    review_id serial NOT NULL PRIMARY KEY,
+    content varchar(255) NOT NULL,
+    is_positive boolean,
+    film_id int NOT NULL REFERENCES films(film_id) ON delete CASCADE,
+	user_id int NOT NULL REFERENCES users(user_id) ON delete CASCADE,
+	useful int
+);
+--
+create table IF NOT EXISTS review_likes (
+    review_id int NOT NULL REFERENCES review(review_id) ON delete CASCADE,
+    user_id int NOT NULL REFERENCES users(user_id) ON delete CASCADE,
+    review_like boolean NOT NULL
+)
