@@ -44,7 +44,7 @@ public class ReviewService {
         return reviewStorage.addLike(reviewId, userId);
     }
 
-    public Review addDislike (Integer reviewId, Integer userId) {
+    public Review addDislike(Integer reviewId, Integer userId) {
         return reviewStorage.addDislike(reviewId, userId);
     }
 
