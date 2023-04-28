@@ -203,4 +203,13 @@ public class SQLScripts {
             "WHERE ulff.USER_ID = ? AND ulff2.USER_ID = ?)\n" +
             "GROUP BY f.FILM_ID\n" +
             "ORDER BY COUNT(ulff.USER_ID) DESC ";
+
+    public static final String GET_RECOMMENDATION_USERS = "SELECT ulff.FILM_ID  \n" +
+            "FROM USER_LIKES_FOR_FILMS ulff \n" +
+            "WHERE ulff.USER_ID = \n" +
+            "(SELECT ulf.USER_ID  \n" +
+            "FROM USER_LIKES_FOR_FILMS ulf \n" +
+            "WHERE ulf.USER_ID != ? AND ulf.FILM_ID IN " +
+            "(SELECT ul.FILM_ID  FROM USER_LIKES_FOR_FILMS ul WHERE ul.USER_ID = ?)\n" +
+            "GROUP BY ulf.USER_ID)";
 }
