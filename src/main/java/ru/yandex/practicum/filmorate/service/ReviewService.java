@@ -28,10 +28,6 @@ public class ReviewService {
         return reviewStorage.deleteReview(reviewId);
     }
 
-    public List<Review> getAllReviews() {
-        return reviewStorage.getAllReviews();
-    }
-
     public Review getReviewById(Integer reviewId) {
         return reviewStorage.getReviewById(reviewId);
     }

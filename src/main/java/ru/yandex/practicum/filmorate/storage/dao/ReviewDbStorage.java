@@ -7,7 +7,11 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.service.enums.EventType;
+import ru.yandex.practicum.filmorate.service.enums.OperationType;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,15 +20,16 @@ import java.util.List;
 import java.util.Objects;
 
 import static ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts.ALL_REVIEWS;
-import static ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts.USEFUL;
 
 @Component
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FeedStorage feedStorage;
 
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate) {
+    public ReviewDbStorage(JdbcTemplate jdbcTemplate, FeedStorage feedStorage) {
         this.jdbcTemplate = jdbcTemplate;
+        this.feedStorage = feedStorage;
     }
 
     @Override
@@ -44,6 +49,7 @@ public class ReviewDbStorage implements ReviewStorage {
             return statement;
         }, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+        feedStorage.addFeed(review.getUserId(), review.getReviewId(), EventType.REVIEW, OperationType.ADD);
         return review;
     }
 
@@ -51,23 +57,24 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review updateReview(Review review) {
         String sql = "UPDATE review SET content = ?, is_positive = ? WHERE review_id = ?";
         jdbcTemplate.update(sql, review.getContent(), review.getIsPositive(), review.getReviewId());
+        feedStorage.addFeed(getReviewById(review.getReviewId()).getUserId(),
+                getReviewById(review.getReviewId()).getFilmId(),
+                EventType.REVIEW, OperationType.UPDATE);
         return getReviewById(review.getReviewId());
     }
 
     @Override
     public boolean deleteReview(Integer reviewId) {
         String sql = "DELETE FROM review WHERE review_id = ?";
+        feedStorage.addFeed(getReviewById(reviewId).getUserId(), getReviewById(reviewId).getFilmId(), EventType.REVIEW,
+                OperationType.REMOVE);
         return jdbcTemplate.update(sql, reviewId) > 0;
     }
 
 
     @Override
     public List<Review> getAllReviews() {
-        String sqlQuery = "SELECT r.review_id , r.content , r.is_positive , r.film_id , r.user_id , " + USEFUL +
-                " FROM REVIEW r " +
-                "LEFT JOIN REVIEW_LIKES rl ON rl.review_id = r.review_id " +
-                "GROUP BY r.review_id ORDER BY USEFUL DESC";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToReview);
+        return jdbcTemplate.query(SQLScripts.GET_ALL_REVIEWS, this::mapRowToReview);
     }
 
     @Override
@@ -84,10 +91,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public List<Review> getReviewsByFilmId(Integer filmId, Integer count) {
-        String srs = ALL_REVIEWS +
-                " WHERE r.FILM_ID = ? " +
-                "GROUP BY r.REVIEW_ID " +
-                "ORDER BY USEFUL DESC LIMIT ?";
+        String srs = ALL_REVIEWS + " WHERE r.FILM_ID = ? GROUP BY r.REVIEW_ID ORDER BY USEFUL DESC LIMIT ?";
         if (filmId == null) {
             return getAllReviews();
         }
@@ -96,8 +100,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public boolean addLike(Integer reviewId, Integer userId) {
-        String sqlQuery = "INSERT INTO PUBLIC.REVIEW_LIKES(REVIEW_ID, USER_ID, REVIEW_LIKE)\n" +
-                "VALUES(?, ?, true)";
+        String sqlQuery = "INSERT INTO PUBLIC.REVIEW_LIKES(REVIEW_ID, USER_ID, REVIEW_LIKE) VALUES(?, ?, true)";
         if (jdbcTemplate.update(sqlQuery, reviewId, userId) > 0) {
             log.info("Лайк от пользователя {} на отзыв {} успешно добавлен", userId, reviewId);
             return true;
