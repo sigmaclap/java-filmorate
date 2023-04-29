@@ -19,7 +19,6 @@ import ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
