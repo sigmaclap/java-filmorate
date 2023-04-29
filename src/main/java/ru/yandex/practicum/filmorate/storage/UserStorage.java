@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -25,5 +26,7 @@ public interface UserStorage {
     List<User> commonFriends(Integer userId, Integer otherId);
 
     List<Film> getFilmRecommended(Integer userId);
+
+    List<Feed> getFeed(Integer userId);
 
 }

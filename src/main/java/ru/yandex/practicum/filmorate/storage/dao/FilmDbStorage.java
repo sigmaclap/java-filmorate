@@ -14,6 +14,9 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.enums.EventType;
+import ru.yandex.practicum.filmorate.service.enums.OperationType;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts;
 
@@ -44,14 +47,16 @@ public class FilmDbStorage implements FilmStorage {
     private static final String ERROR_USER_ID_NOT_FOUND = "Пользователь с идентификатором {} не найден.";
 
     private final JdbcTemplate jdbcTemplate;
-
+    private final FeedStorage feedStorage;
     private final GenreDbStorage genreDbStorage;
     private final DirectorDbStorage directorStorage;
 
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, GenreDbStorage genreDbStorage, DirectorDbStorage directorStorage) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate, FeedStorage feedStorage, GenreDbStorage genreDbStorage,
+                         DirectorDbStorage directorStorage) {
         this.jdbcTemplate = jdbcTemplate;
+        this.feedStorage = feedStorage;
         this.genreDbStorage = genreDbStorage;
         this.directorStorage = directorStorage;
     }
@@ -199,6 +204,7 @@ public class FilmDbStorage implements FilmStorage {
     public boolean likeFilm(Integer filmId, Integer userId) {
         String sqlQuery = SQLScripts.INSERT_USER_LIKE_ON_FILM;
         if (jdbcTemplate.update(sqlQuery, filmId, userId) > 0) {
+            feedStorage.addFeed(userId, filmId, EventType.LIKE, OperationType.ADD);
             log.info("Лайк от пользователя {} на фильм {} успешно добавлен", userId, filmId);
             return true;
         } else {
@@ -211,6 +217,7 @@ public class FilmDbStorage implements FilmStorage {
     public boolean deleteLike(Integer filmId, Integer userId) {
         String sqlQuery = SQLScripts.DELETE_USER_LIKE_ON_FILM;
         if (jdbcTemplate.update(sqlQuery, filmId, userId) > 0) {
+            feedStorage.addFeed(userId, filmId, EventType.LIKE, OperationType.REMOVE);
             log.info("Лайк от пользователя {} на фильм {} успешно удален", userId, filmId);
             return true;
         } else {

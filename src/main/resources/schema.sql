@@ -9,6 +9,7 @@ drop table IF EXISTS director CASCADE;
 drop table IF EXISTS director_films CASCADE;
 drop table IF EXISTS review CASCADE;
 drop table IF EXISTS review_likes CASCADE;
+drop table IF EXISTS user_feeds CASCADE;
 
 
 create TABLE IF NOT EXISTS films_ratings (
@@ -77,4 +78,13 @@ create table IF NOT EXISTS review_likes (
     review_id int NOT NULL REFERENCES review(review_id) ON delete CASCADE,
     user_id int NOT NULL REFERENCES users(user_id) ON delete CASCADE,
     review_like boolean NOT NULL
-)
+);
+
+create TABLE IF NOT EXISTS user_feeds (
+    event_id serial NOT NULL PRIMARY KEY,
+    user_id int NOT NULL REFERENCES users(user_id) ON delete CASCADE,
+    time_stamp bigint NOT NULL,
+    event_type varchar(8) NOT NULL,
+    operation_type varchar(8) NOT NULL,
+    entity_id int NOT NULL
+);

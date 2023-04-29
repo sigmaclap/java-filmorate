@@ -217,4 +217,17 @@ public class SQLScripts {
             "WHEN FALSE THEN -1 ELSE 0 END) AS USEFUL";
     public static final String ALL_REVIEWS = "SELECT r.review_id , r.CONTENT , r.is_positive , r.film_id , r.user_id , " +
             USEFUL + " FROM REVIEW r LEFT JOIN REVIEW_LIKES rl ON r.review_id = rl.review_id";
+
+    public static final String GET_USER_FEED = "SELECT EVENT_ID, USER_ID, ENTITY_ID, TIME_STAMP, EVENT_TYPE, OPERATION_TYPE\n" +
+            "FROM USER_FEEDS\n" +
+            "WHERE USER_ID = ?";
+
+    public static final String ADD_FEED = "INSERT INTO USER_FEEDS\n" +
+            "(USER_ID, TIME_STAMP , EVENT_TYPE, OPERATION_TYPE, ENTITY_ID)\n" +
+            "VALUES(?, ?, ?, ?, ?)";
+
+    public static final String GET_ALL_REVIEWS = "SELECT r.review_id , r.content , r.is_positive , r.film_id , r.user_id , " + USEFUL +
+            " FROM REVIEW r " +
+            "LEFT JOIN REVIEW_LIKES rl ON rl.review_id = r.review_id " +
+            "GROUP BY r.review_id ORDER BY USEFUL DESC";
 }

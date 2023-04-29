@@ -7,8 +7,11 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.InvalidDataException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.enums.EventType;
+import ru.yandex.practicum.filmorate.service.enums.OperationType;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts;
@@ -193,5 +196,27 @@ public class UserDbStorage implements UserStorage {
         return listRecommendationsFilms.stream()
                 .map(filmStorage::findFilmById)
                 .collect(Collectors.toList());
+    }
+
+    public List<Feed> makeFeed(Integer userId) {
+        String sqlUserFeed = SQLScripts.GET_USER_FEED;
+        return jdbcTemplate.query(sqlUserFeed, (rs, rowNum) -> Feed.builder()
+                .eventId(rs.getInt("event_id"))
+                .userId(rs.getInt("user_id"))
+                .timestamp(rs.getLong("time_stamp"))
+                .eventType(EventType.valueOf(rs.getString("event_type")))
+                .operation(OperationType.valueOf(rs.getString("operation_type")))
+                .entityId(rs.getInt("entity_id"))
+                .build(), userId);
+    }
+
+    public List<Feed> getFeed(Integer userId) {
+        User user = findUserById(userId);
+        if (user != null) {
+            return makeFeed(userId);
+        } else {
+            log.info("Пользователь с идентификатором {} не найден, лента событий не показана.", userId);
+            throw new UserNotFoundException("Пользователь не найден");
+        }
     }
 }
