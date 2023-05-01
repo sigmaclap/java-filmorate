@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -23,19 +24,15 @@ import static ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts.ALL
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FeedStorage feedStorage;
 
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate, FeedStorage feedStorage) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.feedStorage = feedStorage;
-    }
-
     @Override
     public Review createReview(Review review) {
         if (review.getUserId() < 0 || review.getFilmId() < 0) {
-            log.info("Отзыв не создан, отрицательные значения.");
+            log.error("Отзыв не создан, отрицательные значения.");
             throw new ReviewNotFoundException("Отзыв не создан, отрицательные значения.");
         }
         String sql = "INSERT INTO REVIEW (content, is_positive, film_id, user_id) VALUES (?, ?, ?, ?)";
@@ -83,7 +80,7 @@ public class ReviewDbStorage implements ReviewStorage {
         List<Review> listReview = getAllReviews();
         boolean isReviewExist = listReview.stream().noneMatch(review -> review.getReviewId().equals(reviewId));
         if (isReviewExist) {
-            log.info("Отзыв с идентификатором {} не найден.", reviewId);
+            log.error("Отзыв с идентификатором {} не найден.", reviewId);
             throw new ReviewNotFoundException("Отзыв не найден");
         }
         return jdbcTemplate.queryForObject(srs, this::mapRowToReview, reviewId);
@@ -105,7 +102,7 @@ public class ReviewDbStorage implements ReviewStorage {
             log.info("Лайк от пользователя {} на отзыв {} успешно добавлен", userId, reviewId);
             return true;
         } else {
-            log.info("Лайк на отзыв не добавлен");
+            log.error("Лайк на отзыв не добавлен");
             throw new ReviewNotFoundException("Лайк не добавлен");
         }
     }
@@ -118,7 +115,7 @@ public class ReviewDbStorage implements ReviewStorage {
             log.info("Дизлайк от пользователя {} на отзыв {} успешно добавлен", userId, reviewId);
             return true;
         } else {
-            log.info("Дизлайк на отзыв не добавлен");
+            log.error("Дизлайк на отзыв не добавлен");
             throw new ReviewNotFoundException("Дизлайк не добавлен");
         }
     }
@@ -130,7 +127,7 @@ public class ReviewDbStorage implements ReviewStorage {
             log.info("Лайк от пользователя {} на отзыв {} успешно удален", userId, reviewId);
             return true;
         } else {
-            log.info("Лайк на отзыв не удален");
+            log.error("Лайк на отзыв не удален");
             throw new ReviewNotFoundException("Лайк не удален");
         }
 
@@ -143,7 +140,7 @@ public class ReviewDbStorage implements ReviewStorage {
             log.info("Дизлайк от пользователя {} на отзыв {} успешно удален", userId, reviewId);
             return true;
         } else {
-            log.info("Дизлайк на отзыв не удален");
+            log.error("Дизлайк на отзыв не удален");
             throw new ReviewNotFoundException("Дизлайк не удален");
         }
     }

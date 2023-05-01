@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -11,17 +12,12 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
     private final GenreStorage genreStorage;
 
     private final MpaStorage mpaStorage;
-
-    public FilmService(FilmStorage filmStorage, GenreStorage genreStorage, MpaStorage mpaStorage) {
-        this.filmStorage = filmStorage;
-        this.genreStorage = genreStorage;
-        this.mpaStorage = mpaStorage;
-    }
 
     public List<Film> getFilms() {
         return filmStorage.getFilms();

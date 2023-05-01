@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -18,14 +19,11 @@ import java.util.Objects;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class DirectorDbStorage implements DirectorStorage {
     private static final String DIRECTOR_ID_COLUMN = "DIRECTOR_ID";
     private static final String NAME_COLUMN = "NAME";
     private final JdbcTemplate jdbcTemplate;
-
-    public DirectorDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public List<Director> getDirectorsList() {
@@ -42,7 +40,7 @@ public class DirectorDbStorage implements DirectorStorage {
                     directorRow.getInt(DIRECTOR_ID_COLUMN),
                     directorRow.getString(NAME_COLUMN));
         } else {
-            log.info("Режиссер с идентификатором {} не найден.", directorId);
+            log.error("Режиссер с идентификатором {} не найден.", directorId);
             throw new FilmNotFoundException("Пустое значение, Режиссер не найден");
         }
     }

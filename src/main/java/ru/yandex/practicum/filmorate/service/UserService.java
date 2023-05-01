@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -15,15 +16,11 @@ import java.util.Map;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
     private final FeedStorage feedStorage;
-
-    public UserService(UserStorage userStorage, FeedStorage feedStorage) {
-        this.userStorage = userStorage;
-        this.feedStorage = feedStorage;
-    }
 
     public List<User> findUsers() {
         return userStorage.findUsers();
@@ -53,7 +50,7 @@ public class UserService {
             feedStorage.addFeed(userId, friendId, EventType.FRIEND, OperationType.ADD);
             return userStorage.findUserById(userId);
         } else {
-            log.info("Пользователь с идентификатором {} не найден, лайк не добавлен.", userId);
+            log.error("Пользователь с идентификатором {} не найден, лайк не добавлен.", userId);
             throw new UserNotFoundException("Пользователь не найден");
         }
     }
@@ -66,7 +63,7 @@ public class UserService {
             feedStorage.addFeed(userId, friendId, EventType.FRIEND, OperationType.REMOVE);
             return userStorage.findUserById(userId);
         } else {
-            log.info("Пользователь с идентификатором {} не найден, удаление не выполнено.", userId);
+            log.error("Пользователь с идентификатором {} не найден, удаление не выполнено.", userId);
             throw new UserNotFoundException("Пользователь не найден");
         }
     }

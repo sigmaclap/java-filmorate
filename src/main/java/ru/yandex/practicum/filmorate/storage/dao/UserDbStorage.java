@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
     private static final String USER_ID_COLUMN = "USER_ID";
@@ -35,18 +36,13 @@ public class UserDbStorage implements UserStorage {
     private static final String BIRTHDAY_COLUMN = "BIRTHDAY";
     private static final String FRIENDSHIP_STATUS_COLUMN = "FRIENDSHIP_STATUS";
     private static final String ERROR_USER_NOT_FOUND = "Пользователь не найден";
+    private static final String ERROR_USER_NOT_FOUND_BY_ID = "Пользователь с идентификатором {} не найден.";
 
     private static final String GET_FILMS_BY_USER_ID = "SELECT FILM_ID FROM USER_LIKES_FOR_FILMS WHERE USER_ID = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
     private final FilmStorage filmStorage;
-
-    @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate, FilmStorage filmStorage) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.filmStorage = filmStorage;
-    }
 
     @Override
     public List<User> findUsers() {
@@ -63,11 +59,11 @@ public class UserDbStorage implements UserStorage {
                 .birthday(rs.getDate(BIRTHDAY_COLUMN).toLocalDate())
                 .build();
 
-        SqlRowSet rset = jdbcTemplate.queryForRowSet(SQLScripts.GET_USER_WITH_FRIENDSHIP, rs.getInt(USER_ID_COLUMN));
-        while (rset.next()) {
-            int id = rset.getInt(FRIEND_ID_COLUMN);
+        SqlRowSet rSet = jdbcTemplate.queryForRowSet(SQLScripts.GET_USER_WITH_FRIENDSHIP, rs.getInt(USER_ID_COLUMN));
+        while (rSet.next()) {
+            int id = rSet.getInt(FRIEND_ID_COLUMN);
             if (id != 0) {
-                boolean isFriendship = rset.getBoolean(FRIENDSHIP_STATUS_COLUMN);
+                boolean isFriendship = rSet.getBoolean(FRIENDSHIP_STATUS_COLUMN);
                 user.getFriendsList().put((long) id, isFriendship);
             }
         }
@@ -91,7 +87,7 @@ public class UserDbStorage implements UserStorage {
                     userRow.getString(NAME_COLUMN),
                     Objects.requireNonNull(userRow.getDate(BIRTHDAY_COLUMN)).toLocalDate());
         } else {
-            log.info("Пользователь с email {} не найден.", user.getEmail());
+            log.error("Пользователь с email {} не найден.", user.getEmail());
             throw new InvalidDataException("Пустое значение User");
         }
     }
@@ -111,7 +107,7 @@ public class UserDbStorage implements UserStorage {
                     .birthday(Objects.requireNonNull(userRow.getDate(BIRTHDAY_COLUMN).toLocalDate()))
                     .build();
         } else {
-            log.info("Пользователь с идентификатором {} не найден, обновление не удалось.", user.getId());
+            log.error("Пользователь с идентификатором {} не найден, обновление не удалось.", user.getId());
             throw new UserNotFoundException(ERROR_USER_NOT_FOUND);
         }
     }
@@ -122,7 +118,7 @@ public class UserDbStorage implements UserStorage {
         List<User> listUsers = findUsers();
         boolean isUserExists = listUsers.stream().noneMatch(user -> user.getId().equals(userId));
         if (isUserExists) {
-            log.info("Пользователь с идентификатором {} не найден.", userId);
+            log.error(ERROR_USER_NOT_FOUND_BY_ID, userId);
             throw new UserNotFoundException(ERROR_USER_NOT_FOUND);
         }
         return jdbcTemplate.queryForObject(sqlQuery, this::makeUser, userId);
@@ -132,8 +128,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getFriendsUser(Integer userId) {
         if (findUserById(userId) == null) {
-            log.info("Пользователь с идентификатором {} не найден.", userId);
-            throw new UserNotFoundException("Пользователь не найден");
+            log.error(ERROR_USER_NOT_FOUND_BY_ID, userId);
+            throw new UserNotFoundException(ERROR_USER_NOT_FOUND);
         }
         String sqlQuery = String.format("SELECT FRIEND_ID FROM USERS_FRIENDS_STATUS ufs WHERE USER_ID = %d", userId);
         List<Integer> idFriends = new ArrayList<>(jdbcTemplate.queryForList(sqlQuery, Integer.class));
@@ -153,10 +149,10 @@ public class UserDbStorage implements UserStorage {
             String sqlQuery = SQLScripts.GET_COMMON_FRIENDS_USER;
             return jdbcTemplate.query(sqlQuery, this::makeUser, userId, otherId);
         } else if (!otherRow.next()) {
-            log.info("Другой пользователь с идентификатором {} не найден.", otherId);
+            log.error("Другой пользователь с идентификатором {} не найден.", otherId);
             throw new UserNotFoundException("Друг не найден");
         } else {
-            log.info("Пользователь с идентификатором {} не найден.", userId);
+            log.error(ERROR_USER_NOT_FOUND_BY_ID, userId);
             throw new UserNotFoundException(ERROR_USER_NOT_FOUND);
         }
     }
@@ -215,8 +211,8 @@ public class UserDbStorage implements UserStorage {
         if (user != null) {
             return makeFeed(userId);
         } else {
-            log.info("Пользователь с идентификатором {} не найден, лента событий не показана.", userId);
-            throw new UserNotFoundException("Пользователь не найден");
+            log.error("Пользователь с идентификатором {} не найден, лента событий не показана.", userId);
+            throw new UserNotFoundException(ERROR_USER_NOT_FOUND);
         }
     }
 }
