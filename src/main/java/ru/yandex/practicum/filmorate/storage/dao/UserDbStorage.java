@@ -19,6 +19,7 @@ import ru.yandex.practicum.filmorate.storage.dao.constants.SQLScripts;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -187,8 +188,13 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<Film> getFilmRecommended(Integer userId) {
         List<Integer> filmsByUserId = jdbcTemplate.queryForList(GET_FILMS_BY_USER_ID, Integer.class, userId);
-        List<Integer> listRecommendationsFilms = jdbcTemplate.queryForList(SQLScripts.GET_RECOMMENDATION_USERS,
-                Integer.class, userId, userId, userId);
+        List<Integer> recommendedIdFriend = jdbcTemplate.queryForList(SQLScripts.GET_RECOMMENDATION_USERS,
+                Integer.class, userId);
+        if (recommendedIdFriend.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Integer> listRecommendationsFilms = jdbcTemplate.queryForList(GET_FILMS_BY_USER_ID,
+                Integer.class, recommendedIdFriend.get(0));
         listRecommendationsFilms.removeAll(filmsByUserId);
         return listRecommendationsFilms.stream()
                 .map(filmStorage::findFilmById)
