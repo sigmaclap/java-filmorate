@@ -41,7 +41,7 @@ public class MpaDbStorage implements MpaStorage {
         }
     }
 
-    public Mpa makeMpas(ResultSet rs, int rowNum) throws SQLException {
+    private Mpa makeMpas(ResultSet rs, int rowNum) throws SQLException {
         return new Mpa(
                 rs.getInt(RATING_ID_COLUMN),
                 rs.getString(NAME_COLUMN));

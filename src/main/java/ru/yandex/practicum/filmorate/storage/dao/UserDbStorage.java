@@ -116,7 +116,8 @@ public class UserDbStorage implements UserStorage {
     public User findUserById(Integer userId) {
         String sqlQuery = SQLScripts.GET_USER;
         List<User> listUsers = findUsers();
-        boolean isUserExists = listUsers.stream().noneMatch(user -> user.getId().equals(userId));
+        boolean isUserExists = listUsers.stream()
+                .noneMatch(user -> user.getId().equals(userId));
         if (isUserExists) {
             log.error(ERROR_USER_NOT_FOUND_BY_ID, userId);
             throw new UserNotFoundException(ERROR_USER_NOT_FOUND);
@@ -187,7 +188,7 @@ public class UserDbStorage implements UserStorage {
     public List<Film> getFilmRecommended(Integer userId) {
         List<Integer> filmsByUserId = jdbcTemplate.queryForList(GET_FILMS_BY_USER_ID, Integer.class, userId);
         List<Integer> listRecommendationsFilms = jdbcTemplate.queryForList(SQLScripts.GET_RECOMMENDATION_USERS,
-                Integer.class, userId, userId);
+                Integer.class, userId, userId, userId);
         listRecommendationsFilms.removeAll(filmsByUserId);
         return listRecommendationsFilms.stream()
                 .map(filmStorage::findFilmById)

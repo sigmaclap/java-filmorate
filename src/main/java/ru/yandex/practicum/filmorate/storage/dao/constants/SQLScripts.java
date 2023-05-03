@@ -204,14 +204,11 @@ public class SQLScripts {
             "GROUP BY f.FILM_ID\n" +
             "ORDER BY COUNT(ulff.USER_ID) DESC ";
 
-    public static final String GET_RECOMMENDATION_USERS = "SELECT ulff.FILM_ID  \n" +
-            "FROM USER_LIKES_FOR_FILMS ulff \n" +
-            "WHERE ulff.USER_ID = \n" +
-            "(SELECT ulf.USER_ID  \n" +
-            "FROM USER_LIKES_FOR_FILMS ulf \n" +
-            "WHERE ulf.USER_ID != ? AND ulf.FILM_ID IN " +
-            "(SELECT ul.FILM_ID  FROM USER_LIKES_FOR_FILMS ul WHERE ul.USER_ID = ?)\n" +
-            "GROUP BY ulf.USER_ID)";
+    public static final String GET_RECOMMENDATION_USERS = "SELECT ulff2.FILM_ID \n" +
+            "FROM USER_LIKES_FOR_FILMS ulff\n" +
+            "JOIN USER_LIKES_FOR_FILMS ulff2 ON ulff2.USER_ID != ?\n" +
+            "WHERE ulff.USER_ID != ? AND ulff.FILM_ID IN " +
+            "(SELECT ul.FILM_ID  FROM USER_LIKES_FOR_FILMS ul WHERE ul.USER_ID = ?)";
 
     public static final String USEFUL = "SUM(CASE rl.review_like WHEN TRUE THEN +1 " +
             "WHEN FALSE THEN -1 ELSE 0 END) AS USEFUL";

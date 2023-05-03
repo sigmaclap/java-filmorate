@@ -77,7 +77,7 @@ public class DirectorDbStorage implements DirectorStorage {
         return jdbcTemplate.query(sqlQuery, this::makeDirector, filmId);
     }
 
-    public Director makeDir(ResultSet rs) throws SQLException {
+    protected Director makeDir(ResultSet rs) throws SQLException {
         return new Director(
                 rs.getInt(DIRECTOR_ID_COLUMN),
                 rs.getString(NAME_COLUMN));

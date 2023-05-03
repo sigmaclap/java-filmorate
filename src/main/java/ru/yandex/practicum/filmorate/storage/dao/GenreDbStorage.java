@@ -40,13 +40,13 @@ public class GenreDbStorage implements GenreStorage {
         return jdbcTemplate.query(sqlQuery, this::makeGenres);
     }
 
-    public Genre makeGenre(ResultSet rs) throws SQLException {
+    protected Genre makeGenre(ResultSet rs) throws SQLException {
         return new Genre(
                 rs.getInt(GENRE_ID_COLUMN),
                 rs.getString(NAME_COLUMN));
     }
 
-    public Genre makeGenres(ResultSet rs, int rowNum) throws SQLException {
+    private Genre makeGenres(ResultSet rs, int rowNum) throws SQLException {
         return new Genre(
                 rs.getInt(GENRE_ID_COLUMN),
                 rs.getString(NAME_COLUMN));

@@ -78,7 +78,8 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review getReviewById(Integer reviewId) {
         String srs = (ALL_REVIEWS + " WHERE r.review_id = ? GROUP BY r.review_id");
         List<Review> listReview = getAllReviews();
-        boolean isReviewExist = listReview.stream().noneMatch(review -> review.getReviewId().equals(reviewId));
+        boolean isReviewExist = listReview.stream()
+                .noneMatch(review -> review.getReviewId().equals(reviewId));
         if (isReviewExist) {
             log.error("Отзыв с идентификатором {} не найден.", reviewId);
             throw new ReviewNotFoundException("Отзыв не найден");

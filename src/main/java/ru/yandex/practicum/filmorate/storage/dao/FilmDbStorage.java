@@ -64,7 +64,8 @@ public class FilmDbStorage implements FilmStorage {
     public Film findFilmById(Integer filmId) {
         String sqlQuery = SQLScripts.GET_FILM_WITH_ID;
         List<Film> listFilms = getFilms();
-        boolean isFilmExists = listFilms.stream().noneMatch(film -> film.getId().equals(filmId));
+        boolean isFilmExists = listFilms.stream()
+                .noneMatch(film -> film.getId().equals(filmId));
         if (isFilmExists) {
             log.error("Фильм с идентификатором {} не найден.", filmId);
             throw new FilmNotFoundException(ERROR_EMPTY_FILM_VALUE);
@@ -103,10 +104,13 @@ public class FilmDbStorage implements FilmStorage {
             film.setGenres(Collections.emptySet());
             return;
         }
-        List<Integer> genresId = film.getGenres().stream().map(Genre::getId).collect(Collectors.toList());
+        List<Integer> genresId = film.getGenres().stream()
+                .map(Genre::getId)
+                .collect(Collectors.toList());
         if (!genresId.isEmpty()) {
             String genres = genresId.stream()
-                    .map(id -> String.format("(%d,%d)", filmId, id)).collect(Collectors.joining(","));
+                    .map(id -> String.format("(%d,%d)", filmId, id))
+                    .collect(Collectors.joining(","));
             jdbcTemplate.update(SQLScripts.INSERT_GENRE_ID + genres);
             String sql2 = SQLScripts.GET_GENRE_ID_WITH_SORT;
             film.setGenres(new HashSet<>(jdbcTemplate.query(sql2, (rs, rowNum) -> genreDbStorage.makeGenre(rs),
@@ -120,10 +124,13 @@ public class FilmDbStorage implements FilmStorage {
             film.setDirectors(Collections.emptyList());
             return;
         }
-        List<Integer> directorsId = film.getDirectors().stream().map(Director::getId).collect(Collectors.toList());
+        List<Integer> directorsId = film.getDirectors().stream()
+                .map(Director::getId)
+                .collect(Collectors.toList());
         if (!directorsId.isEmpty()) {
             String directors = directorsId.stream()
-                    .map(id -> String.format("(%d,%d)", filmId, id)).collect(Collectors.joining(","));
+                    .map(id -> String.format("(%d,%d)", filmId, id))
+                    .collect(Collectors.joining(","));
             for (Integer directorIds : directorsId) {
                 if (directorStorage.getDirectorById(directorIds) == null) {
                     log.error("Режиссер c идентификатором не существует {}.", directorIds);
@@ -187,25 +194,29 @@ public class FilmDbStorage implements FilmStorage {
     private List<Film> getMostPopularFilmsWithGenresAndYear(Integer count, Integer genreId, Integer year) {
         String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_YEAR;
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count).stream()
-                .distinct().collect(Collectors.toList());
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private List<Film> getMostPopularFilmsWithGenres(Integer count, Integer genreId) {
         String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITH_GENRES_AND_WITHOUT_YEAR;
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count).stream()
-                .distinct().collect(Collectors.toList());
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private List<Film> getMostPopularFilmsWithYear(Integer count, Integer year) {
         String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_WITH_YEAR;
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count).stream()
-                .distinct().collect(Collectors.toList());
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private List<Film> getMostPopularFilms(Integer count) {
         String sqlQuery = SQLScripts.GET_MOST_POPULAR_FILMS_WITHOUT_GENRES_AND_YEAR;
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count).stream()
-                .distinct().collect(Collectors.toList());
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Override
