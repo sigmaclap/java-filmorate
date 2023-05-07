@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -14,16 +15,13 @@ import java.util.List;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
 
     private static final String GENRE_ID_COLUMN = "GENRE_ID";
     private static final String NAME_COLUMN = "NAME";
 
     private final JdbcTemplate jdbcTemplate;
-
-    public GenreDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     public Genre getGenreById(Integer genreId) {
         SqlRowSet genreRow = jdbcTemplate.queryForRowSet("SELECT * FROM GENRE g WHERE GENRE_ID = ?", genreId);
@@ -32,7 +30,7 @@ public class GenreDbStorage implements GenreStorage {
                     genreRow.getInt(GENRE_ID_COLUMN),
                     genreRow.getString(NAME_COLUMN));
         } else {
-            log.info("Жанр с идентификатором {} не найден.", genreId);
+            log.error("Жанр с идентификатором {} не найден.", genreId);
             throw new FilmNotFoundException("Пустое значение, Жанр не найден");
         }
     }
@@ -42,13 +40,13 @@ public class GenreDbStorage implements GenreStorage {
         return jdbcTemplate.query(sqlQuery, this::makeGenres);
     }
 
-    public Genre makeGenre(ResultSet rs) throws SQLException {
+    protected Genre makeGenre(ResultSet rs) throws SQLException {
         return new Genre(
                 rs.getInt(GENRE_ID_COLUMN),
                 rs.getString(NAME_COLUMN));
     }
 
-    public Genre makeGenres(ResultSet rs, int rowNum) throws SQLException {
+    private Genre makeGenres(ResultSet rs, int rowNum) throws SQLException {
         return new Genre(
                 rs.getInt(GENRE_ID_COLUMN),
                 rs.getString(NAME_COLUMN));

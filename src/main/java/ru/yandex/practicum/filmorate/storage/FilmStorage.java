@@ -13,10 +13,18 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    List<Film> getFilmsWithCountLikes(Integer count);
+    List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year);
 
     boolean likeFilm(Integer filmId, Integer userId);
 
     boolean deleteLike(Integer filmId, Integer userId);
+
+    boolean deleteFilm(Integer filmId);
+
+    List<Film> getFilmByTitleOrDirector(String queryName, String options);
+
+    List<Film> getFilmByDirector(Integer directorId, String sortBy);
+
+    List<Film> commonFilms(Integer userId, Integer friendId);
 
 }

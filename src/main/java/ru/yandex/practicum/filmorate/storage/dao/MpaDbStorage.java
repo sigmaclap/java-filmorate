@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -14,16 +15,13 @@ import java.util.List;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class MpaDbStorage implements MpaStorage {
 
     private static final String RATING_ID_COLUMN = "RATING_ID";
     private static final String NAME_COLUMN = "NAME";
 
     private final JdbcTemplate jdbcTemplate;
-
-    public MpaDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     public List<Mpa> getMpaList() {
         return jdbcTemplate.query("SELECT * FROM FILMS_RATINGS fr ORDER BY RATING_ID ASC", this::makeMpas);
@@ -38,18 +36,12 @@ public class MpaDbStorage implements MpaStorage {
                     .name(mpaRows.getString(NAME_COLUMN))
                     .build();
         } else {
-            log.info("Рейтинг МРА с идентификатором {} не найден.", ratingId);
+            log.error("Рейтинг МРА с идентификатором {} не найден.", ratingId);
             throw new FilmNotFoundException("Рейтинг МРА не найден");
         }
     }
 
-    public Mpa makeMpa(ResultSet rs) throws SQLException {
-        return new Mpa(
-                rs.getInt(RATING_ID_COLUMN),
-                rs.getString(NAME_COLUMN));
-    }
-
-    public Mpa makeMpas(ResultSet rs, int rowNum) throws SQLException {
+    private Mpa makeMpas(ResultSet rs, int rowNum) throws SQLException {
         return new Mpa(
                 rs.getInt(RATING_ID_COLUMN),
                 rs.getString(NAME_COLUMN));

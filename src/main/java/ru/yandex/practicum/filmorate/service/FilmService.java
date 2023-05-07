@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -11,17 +12,12 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
     private final GenreStorage genreStorage;
 
     private final MpaStorage mpaStorage;
-
-    public FilmService(FilmStorage filmStorage, GenreStorage genreStorage, MpaStorage mpaStorage) {
-        this.filmStorage = filmStorage;
-        this.genreStorage = genreStorage;
-        this.mpaStorage = mpaStorage;
-    }
 
     public List<Film> getFilms() {
         return filmStorage.getFilms();
@@ -39,8 +35,8 @@ public class FilmService {
         return filmStorage.update(film);
     }
 
-    public List<Film> getFilmsWithCountLikes(Integer count) {
-        return filmStorage.getFilmsWithCountLikes(count);
+    public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getMostPopularFilms(count, genreId, year);
     }
 
     public boolean likeFilm(Integer filmId, Integer userId) {
@@ -49,6 +45,10 @@ public class FilmService {
 
     public boolean deleteLike(Integer filmId, Integer userId) {
         return filmStorage.deleteLike(filmId, userId);
+    }
+
+    public boolean deleteFilmById(Integer filmId) {
+        return filmStorage.deleteFilm(filmId);
     }
 
     public List<Genre> getGenres() {
@@ -67,4 +67,15 @@ public class FilmService {
         return mpaStorage.getMpaById(mpaId);
     }
 
+    public List<Film> getFilmByTitleOrDirector(String queryName, String options) {
+        return filmStorage.getFilmByTitleOrDirector(queryName, options);
+    }
+
+    public List<Film> getFilmByDirector(Integer directorId, String sortBy) {
+        return filmStorage.getFilmByDirector(directorId, sortBy);
+    }
+
+    public List<Film> commonFilms(Integer userId, Integer friendId) {
+        return filmStorage.commonFilms(userId, friendId);
+    }
 }
